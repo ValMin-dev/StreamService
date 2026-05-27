@@ -5,13 +5,21 @@ import { PrismaService } from 'src/core/prisma/prisma.service'
 import { CreateUserInput } from './inputs/create-user.input'
 
 @Injectable()
-
 export class AccountService {
 	public constructor(private readonly prismaService: PrismaService) {}
 
 	public async findAll() {
 		const users = await this.prismaService.users.findMany()
 		return users
+	}
+
+	async me(id: string) {
+		const user = await this.prismaService.users.findUnique({
+			where: {
+				id
+			}
+		})
+		return user
 	}
 
 	public async create(input: CreateUserInput) {
