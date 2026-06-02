@@ -13,13 +13,9 @@ type Unit =
 	| 'Y'
 	| 'Weeks'
 	| 'Week'
-	| 'Wks'
-	| 'Wk'
 	| 'W'
 	| 'Days'
 	| 'Day'
-	| 'Dys'
-	| 'Dy'
 	| 'D'
 	| 'Hours'
 	| 'Hour'
@@ -35,36 +31,38 @@ type Unit =
 	| 'Second'
 	| 'Secs'
 	| 'Sec'
-	| 'S'
+	| 's'
 	| 'Milliseconds'
 	| 'Millisecond'
 	| 'Msecs'
 	| 'Msec'
 	| 'Ms'
-	| 'ms'
 
-type UnitAnyCase = Unit | Lowercase<Unit> | Uppercase<Unit>
+type UnitAnyCase = Unit | Uppercase<Unit> | Lowercase<Unit>
 
 export type StringValue =
+	| `${number}`
 	| `${number}${UnitAnyCase}`
 	| `${number} ${UnitAnyCase}`
-	| `${number}.${number}${UnitAnyCase}`
-	| `${number}.${number} ${UnitAnyCase}`
 
 export function ms(str: StringValue): number {
-	if (typeof str !== 'string' || str.length > 100 || str.length === 0) {
-		throw new Error('Invalid input')
+	if (typeof str !== 'string' || str.length === 0 || str.length > 100) {
+		throw new Error(
+			'Value provided to ms() must be a string with length between 1 and 99.'
+		)
 	}
 
-	const normalized = str.trim().replace(/^['"]|['"]$/g, '')
+	const match =
+		/^(?<value>-?(?:\d+)?\.?\d+) *(?<type>milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
+			str
+		)
 
-	const match = normalized.match(/^(\d+(?:\.\d+)?)\s*(\w+)$/)
-	if (!match) {
-		throw new Error('Invalid input')
+	const groups = match?.groups as { value: string; type?: string } | undefined
+	if (!groups) {
+		return NaN
 	}
-
-	const n = parseFloat(match[1])
-	const type = (match[2] || 'ms').toLowerCase() as Lowercase<Unit>
+	const n = parseFloat(groups.value)
+	const type = (groups.type || 'ms').toLowerCase() as Lowercase<Unit>
 
 	switch (type) {
 		case 'years':
@@ -75,14 +73,10 @@ export function ms(str: StringValue): number {
 			return n * y
 		case 'weeks':
 		case 'week':
-		case 'wks':
-		case 'wk':
 		case 'w':
 			return n * w
 		case 'days':
 		case 'day':
-		case 'dys':
-		case 'dy':
 		case 'd':
 			return n * d
 		case 'hours':
@@ -110,6 +104,8 @@ export function ms(str: StringValue): number {
 		case 'ms':
 			return n
 		default:
-			throw new Error('Invalid unit')
+			throw new Error(
+				`Ошибка: единица времени ${type} была распознана, но не существует соответствующего случая. Пожалуйста, проверьте введенные данные.`
+			)
 	}
 }

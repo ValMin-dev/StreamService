@@ -7,14 +7,17 @@ datasource db {
   url      = env("POSTGRES_URI")
 }
 
-model Users {
-  id        String   @id @default(uuid())
-  name      String
-  username  String   @unique
-  email     String   @unique
+model User {
+  id String @id @default(uuid())
+
+  email       String  @unique
+  username    String? @unique
+  displayName String? @map("display_name")
+
   password  String
-  avatarUrl String?  @map("avatar_url")
+  avatarUrl String? @map("avatar_url")
   bio       String?
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
