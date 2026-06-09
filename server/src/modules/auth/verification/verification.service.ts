@@ -1,0 +1,68 @@
+import { PrismaService } from '@/src/core/prisma/prisma.service'
+import { Injectable } from '@nestjs/common'
+import { MailService } from '../../libs/mail/mail.service'
+import { VerificationInput } from './inputs/verification.input'
+import { TokenType, User } from '@prisma/client'
+import { getSessionMetadata } from '@/src/shared/utils/session-metadata.util'
+import { saveSession } from '@/src/shared/utils/session.util'
+import type { Request } from 'express'
+import { generateToken } from '@/src/shared/utils/generate-token.util'
+@Injectable()
+export class VerificationService {
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly mailService: MailService
+	) {}
+
+	async verify(req: Request, input: VerificationInput, userAgent: string) {
+		const { token } = input
+
+		const existingToken = await this.prisma.token.findUnique({
+			where: {
+				token,
+				type: TokenType.EMAIL_VERIFICATION
+			}
+		})
+		if (!existingToken) {
+			throw new Error('Invalid token')
+		}
+
+		const hasExpired = new Date(existingToken.expiresIn) < new Date()
+		if (hasExpired) {
+			throw new Error('Token has expired')
+		}
+
+		const user = await this.prisma.user.update({
+			where: {
+				id: existingToken.userId
+			},
+			data: {
+				isEmailVerified: true
+			}
+		})
+		await this.prisma.token.delete({
+			where: {
+				id: existingToken.id,
+				type: TokenType.EMAIL_VERIFICATION
+			}
+		})
+
+		const metadata = getSessionMetadata(req, userAgent)
+		return saveSession(req, user, metadata)
+	}
+
+	async sendVerificationToken(user: User) {
+		const verificationToken = await generateToken(
+			this.prisma,
+			user,
+			TokenType.EMAIL_VERIFICATION,
+			true
+		)
+
+		await this.mailService.sendVerificationEmail(
+			user.email,
+			verificationToken.token
+		)
+		return true
+	}
+}

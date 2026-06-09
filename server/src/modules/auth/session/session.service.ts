@@ -6,13 +6,16 @@ import type { Request } from 'express'
 import { ConfigService } from '@nestjs/config'
 import { getSessionMetadata } from '@/src/shared/utils/session-metadata.util'
 import { RedisService } from '@/src/core/redis/redis.service'
+import { destroySession, saveSession } from '@/src/shared/utils/session.util'
+import { VerificationService } from '../verification/verification.service'
 
 @Injectable()
 export class SessionService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly configService: ConfigService,
-		private readonly redisService: RedisService
+		private readonly redisService: RedisService,
+		private readonly verificationService: VerificationService
 	) {}
 
 	async findByUser(req: Request) {
@@ -93,48 +96,23 @@ export class SessionService {
 			throw new Error('Invalid login credentials')
 		}
 
+		if (!user.isEmailVerified) {
+			await this.verificationService.sendVerificationToken(user)
+			throw new Error(
+				'Email not verified. A new verification email has been sent.'
+			)
+		}
+
 		const isPasswordValid = await verify(user.password, password)
 		if (!isPasswordValid) {
 			throw new Error('Invalid login credentials')
 		}
 		const metadata = getSessionMetadata(req, userAgent)
 
-		return new Promise((resolve, reject) => {
-			req.session.userId = user.id
-			req.session.createdAt = new Date()
-			req.session.metadata = metadata
-			req.session.save(err => {
-				if (err) {
-					return reject(new Error('Failed to save session'))
-				}
-				console.log('Session saved successfully:', user)
-				resolve(user)
-			})
-		})
+		return saveSession(req, user, metadata)
 	}
 
 	async logout(req: Request) {
-		return new Promise((resolve, reject) => {
-			req.session.destroy(err => {
-				if (err) {
-					return reject(new Error('Failed to destroy session'))
-				} else {
-					const cookieName = this.configService.getOrThrow<string>(
-						'SESSION_COOKIE_NAME'
-					)
-					const cookieDomain = this.configService.getOrThrow<string>(
-						'SESSION_COOKIE_DOMAIN'
-					)
-					req.res?.clearCookie(cookieName, {
-						domain: cookieDomain,
-						path: '/',
-						httpOnly: true,
-						sameSite: 'lax',
-						secure: req.secure
-					})
-					resolve(true)
-				}
-			})
-		})
+		return destroySession(req, this.configService)
 	}
 }
