@@ -1,13 +1,15 @@
 import * as React from 'react'
 import { Html } from '@react-email/html'
-import { Head } from '@react-email/head'
-import { Tailwind } from '@react-email/tailwind'
-import { Body } from '@react-email/body'
-import { Section } from '@react-email/section'
-import { Heading } from '@react-email/heading'
-import { Text } from '@react-email/text'
-import { Link } from '@react-email/link'
-import { Preview } from '@react-email/preview'
+import {
+	Head,
+	Body,
+	Link,
+	Preview,
+	Section,
+	Heading,
+	Text,
+	Tailwind
+} from '@react-email/components'
 
 interface VerificationTemplateProps {
 	domain: string
