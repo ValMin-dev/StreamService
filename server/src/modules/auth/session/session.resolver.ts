@@ -7,6 +7,7 @@ import { Authorized } from '@/src/shared/decorators/authorized.decorator'
 import { Authorization } from '@/src/shared/decorators/auth.decorator'
 import { UserAgent } from '@/src/shared/decorators/user-agent.decorator'
 import { SessionModel } from './models/session.model'
+import { AuthModel } from '../account/models/auth.model'
 
 @Resolver('Session')
 export class SessionResolver {
@@ -49,7 +50,7 @@ export class SessionResolver {
 		return this.sessionService.remove(req, sessionId)
 	}
 
-	@Mutation(() => UserModel, { name: 'loginUser' })
+	@Mutation(() => AuthModel, { name: 'loginUser' })
 	async login(
 		@Context() { req }: GqlContext,
 		@Args('data') input: LoginInput,

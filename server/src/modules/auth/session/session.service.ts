@@ -8,6 +8,7 @@ import { getSessionMetadata } from '@/src/shared/utils/session-metadata.util'
 import { RedisService } from '@/src/core/redis/redis.service'
 import { destroySession, saveSession } from '@/src/shared/utils/session.util'
 import { VerificationService } from '../verification/verification.service'
+import { TOTP } from 'otpauth'
 
 @Injectable()
 export class SessionService {
@@ -82,7 +83,7 @@ export class SessionService {
 	}
 
 	async login(req: Request, input: LoginInput, userAgent: string) {
-		const { login, password } = input
+		const { login, password, pin } = input
 
 		const user = await this.prisma.user.findFirst({
 			where: {
@@ -107,9 +108,34 @@ export class SessionService {
 		if (!isPasswordValid) {
 			throw new Error('Invalid login credentials')
 		}
+
+		if (user.isTotpEnabled) {
+			if (!pin) {
+				return {
+					user: null,
+					message: 'TOTP code required'
+				}
+			}
+			const totp = new TOTP({
+				issuer: 'TwitchCopy',
+				label: `${user.email}`,
+				algorithm: 'SHA1',
+				digits: 6,
+				secret: user.totpSecret
+			})
+			const delta = totp.validate({ token: pin })
+			if (delta === null) {
+				throw new Error('Invalid TOTP code')
+			}
+		}
+
 		const metadata = getSessionMetadata(req, userAgent)
 
-		return saveSession(req, user, metadata)
+		const savedUser = await saveSession(req, user, metadata)
+		return {
+			user: savedUser,
+			message: null
+		}
 	}
 
 	async logout(req: Request) {

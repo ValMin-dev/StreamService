@@ -1,3 +1,4 @@
+import { TotpModule } from './../modules/auth/totp/totp.module'
 import { Module } from '@nestjs/common'
 import { PrismaModule } from './prisma/prisma.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
@@ -20,6 +21,7 @@ import { PasswordRecoveryModule } from '../modules/auth/password-recovery/passwo
 		VerificationModule,
 		MailModule,
 		PasswordRecoveryModule,
+		TotpModule,
 		GraphQLModule.forRootAsync({
 			driver: ApolloDriver,
 			useFactory: getGraphQLConfig,

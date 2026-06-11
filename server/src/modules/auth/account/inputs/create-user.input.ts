@@ -5,7 +5,6 @@ import {
 	IsNotEmpty,
 	IsString,
 	Matches,
-	Min,
 	MinLength
 } from 'class-validator'
 

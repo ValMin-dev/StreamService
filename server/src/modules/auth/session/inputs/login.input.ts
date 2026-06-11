@@ -4,6 +4,7 @@ import {
 	IsEmail,
 	IsNotEmpty,
 	IsString,
+	Length,
 	Matches,
 	Min,
 	MinLength
@@ -21,4 +22,7 @@ export class LoginInput {
 	@IsNotEmpty()
 	@MinLength(6)
 	password: string
+
+	@Field(() => String, { nullable: true })
+	pin?: string
 }

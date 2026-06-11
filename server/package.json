@@ -44,6 +44,7 @@
 		"express-session": "^1.18.1",
 		"geoip-lite": "^1.4.10",
 		"graphql": "^16.9.0",
+		"hi-base32": "^0.5.1",
 		"i18n-iso-countries": "^7.12.0",
 		"ioredis": "^5.4.1",
 		"otpauth": "^9.3.4",
