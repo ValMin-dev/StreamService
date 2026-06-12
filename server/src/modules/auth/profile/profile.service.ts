@@ -4,6 +4,9 @@ import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { User } from '@prisma/client'
 import * as Upload from 'graphql-upload/Upload.js'
 import * as sharp from 'sharp'
+import { ChangeProfileInfoInput } from './inputs/change-profile-info.input'
+import { SocialLinkInput } from './inputs/social-link.input'
+import { SocialLinkRemoveInput } from './inputs/social-link-remove.input'
 
 @Injectable()
 export class ProfileService {
@@ -11,6 +14,76 @@ export class ProfileService {
 		private readonly storageService: StorageService,
 		private readonly prisma: PrismaService
 	) {}
+
+	async getAllSocialLinks(user: User) {
+		return this.prisma.socialLink.findMany({
+			where: {
+				userId: user.id
+			}
+		})
+	}
+
+	async removeSocialLink(user: User, input: SocialLinkRemoveInput) {
+		const { url } = input
+		const socialLink = await this.prisma.socialLink.findFirst({
+			where: {
+				userId: user.id,
+				url: url
+			}
+		})
+		if (!socialLink) {
+			throw new Error('Social link not found')
+		}
+		await this.prisma.socialLink.delete({
+			where: {
+				id: socialLink.id
+			}
+		})
+		return true
+	}
+
+	async createSocialLink(user: User, input: SocialLinkInput) {
+		const { title, url } = input
+
+		const lastSocialLink = await this.prisma.socialLink.findFirst({
+			where: { userId: user.id },
+			orderBy: { createdAt: 'desc' }
+		})
+		const lastPosition = lastSocialLink ? lastSocialLink.position + 1 : 1
+
+		await this.prisma.socialLink.create({
+			data: {
+				title,
+				url,
+				position: lastPosition,
+				user: { connect: { id: user.id } }
+			}
+		})
+		return true
+	}
+
+	async changeProfile(user: User, input: ChangeProfileInfoInput) {
+		const { username, displayName, bio } = input
+		console.log('Changing profile for user:', user.id, 'with input:', input)
+
+		const existingUser = await this.prisma.user.findUnique({
+			where: { username: username }
+		})
+		if (existingUser && existingUser.id !== user.id) {
+			throw new Error('Username is already taken')
+		}
+
+		await this.prisma.user.update({
+			where: { id: user.id },
+			data: {
+				username: username || user.username,
+				displayName: displayName || user.displayName,
+				bio: bio || user.bio,
+				updatedAt: new Date()
+			}
+		})
+		return true
+	}
 
 	async changeAvatar(user: User, file: Upload) {
 		if (user.avatarUrl) {
