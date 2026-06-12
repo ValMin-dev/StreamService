@@ -14,7 +14,8 @@ import { MailModule } from '../modules/libs/mail/mail.module'
 import { PasswordRecoveryModule } from '../modules/auth/password-recovery/password-recovery.module'
 import { DeactivateModule } from '../modules/auth/deactivate/deactivate.module'
 import { CronModule } from '../modules/cron/cron.module'
-
+import { StorageModule } from '../modules/libs/storage/storage.module'
+import { ProfileModule } from '../modules/auth/profile/profile.module'
 @Module({
 	imports: [
 		PrismaModule,
@@ -26,6 +27,8 @@ import { CronModule } from '../modules/cron/cron.module'
 		TotpModule,
 		DeactivateModule,
 		CronModule,
+		StorageModule,
+		ProfileModule,
 		GraphQLModule.forRootAsync({
 			driver: ApolloDriver,
 			useFactory: getGraphQLConfig,

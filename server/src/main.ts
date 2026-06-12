@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core'
 import RedisStore from 'connect-redis'
 import * as cookieParser from 'cookie-parser'
 import * as session from 'express-session'
+import * as graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js'
 import { CoreModule } from './core/core.module'
 import { RedisService } from './core/redis/redis.service'
 import { ms, type StringValue } from './shared/utils/ms.util'
@@ -19,6 +20,7 @@ async function bootstrap() {
 			transform: true
 		})
 	)
+	app.use(config.getOrThrow<string>('GRAPHQL_PREFIX'), graphqlUploadExpress())
 	app.use(
 		session({
 			secret: config.getOrThrow<string>('SESSION_SECRET'),
