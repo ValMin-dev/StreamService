@@ -13,21 +13,23 @@ model User {
   email       String  @unique
   username    String? @unique
   displayName String? @map("display_name")
+  password    String
+  avatarUrl   String? @map("avatar_url")
+  bio         String?
 
-  password        String
-  avatarUrl       String?  @map("avatar_url")
-  bio             String?
-  isVerified      Boolean  @default(false) @map("is_verified")
-  isEmailVerified Boolean  @default(false) @map("is_email_verified")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  isVerified      Boolean @default(false) @map("is_verified")
+  isEmailVerified Boolean @default(false) @map("is_email_verified")
   tokens          Token[]
-  isTotpEnabled   Boolean  @default(false) @map("is_totp_enabled")
-  totpSecret      String?  @map("totp_secret")
+  isTotpEnabled   Boolean @default(false) @map("is_totp_enabled")
+  totpSecret      String? @map("totp_secret")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   isDeactivated Boolean      @default(false) @map("is_deactivated")
   deactivatedAt DateTime?    @map("deactivated_at")
   socialLinks   SocialLink[]
+  stream        Stream?
 
   @@map("users")
 }
@@ -43,6 +45,26 @@ model SocialLink {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("social_links")
+}
+
+model Stream {
+  id    String @id @default(uuid())
+  title String
+
+  thumbnailUrl String? @map("thumbnail_url")
+
+  ingressId String? @unique @map("ingress_id")
+  serverUrl String? @map("server_url")
+  streamKey String? @map("stream_key")
+
+  isLive Boolean @default(false) @map("is_live")
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String? @unique @map("user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("streams")
 }
 
 model Token {

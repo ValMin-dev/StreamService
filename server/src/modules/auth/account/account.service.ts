@@ -14,8 +14,36 @@ export class AccountService {
 	) {}
 
 	async findAll() {
-		const users = await this.prismaService.user.findMany()
+		const users = await this.prismaService.user.findMany({
+			include: {
+				socialLinks: true
+			}
+		})
 		return users
+	}
+
+	async findSocialLinks(userId: string) {
+		const socialLinks = await this.prismaService.socialLink.findMany({
+			where: {
+				userId
+			},
+			orderBy: {
+				position: 'asc'
+			}
+		})
+		return socialLinks
+	}
+
+	async findProfile(id: string) {
+		const user = await this.prismaService.user.findUnique({
+			where: {
+				id
+			},
+			include: {
+				socialLinks: true
+			}
+		})
+		return user
 	}
 
 	async create(dto: CreateUserInput) {
@@ -46,7 +74,13 @@ export class AccountService {
 				email,
 				username: username || email.split('@')[0],
 				displayName: username || email.split('@')[0],
-				password: await hash(password)
+				password: await hash(password),
+				stream: {
+					create: {
+						title: `${username || email.split('@')[0]}'s Stream`,
+						isLive: false
+					}
+				}
 			}
 		})
 		await this.verificationService.sendVerificationToken(user)

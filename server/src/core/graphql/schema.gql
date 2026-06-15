@@ -22,6 +22,11 @@ input ChangeProfileInfoInput {
   username: String
 }
 
+input ChangeStreamInfoInput {
+  categoryId: String!
+  title: String!
+}
+
 input CreateUserInput {
   email: String!
   password: String!
@@ -68,6 +73,8 @@ type Mutation {
   changeEmail(data: ChangeEmailInput!): Boolean!
   changePassword(data: ChangePasswordInput!): Boolean!
   changeProfileInfo(data: ChangeProfileInfoInput!): Boolean!
+  changeStreamInfo(data: ChangeStreamInfoInput!): Boolean!
+  changeStreamThumbnail(thumbnail: Upload!): Boolean!
   clearSessionCookie: Boolean!
   createSocialLink(data: SocialLinkInput!): Boolean!
   createUser(data: CreateUserInput!): Boolean!
@@ -80,7 +87,10 @@ type Mutation {
   removeAvatar: Boolean!
   removeSession(sessionId: String!): Boolean!
   removeSocialLink(data: SocialLinkRemoveInput!): Boolean!
+  removeStreamThumbnail: Boolean!
+  reorderSocialLinks(data: [SocialLinkOrderInput!]!): Boolean!
   resetPassword(data: ResetPasswordInput!): Boolean!
+  updateSocialLink(data: SocialLinkInput!, id: String!): Boolean!
   verifyAccount(data: VerificationInput!): UserModel!
 }
 
@@ -91,10 +101,13 @@ input NewPasswordInput {
 }
 
 type Query {
+  findAllStreams(data: StreamFiltersInput!): [StreamModel!]!
   findAllUsers: [UserModel!]!
   findCurrentSession: SessionModel!
   findProfile: UserModel!
+  findRandomStreams: [StreamModel!]!
   findSessionsByUser: [SessionModel!]!
+  findSocialLinks: [SocialLinkModel!]!
   generateTotpSecret: TotpModel!
 }
 
@@ -120,8 +133,42 @@ input SocialLinkInput {
   url: String!
 }
 
+type SocialLinkModel {
+  createdAt: DateTime!
+  id: ID!
+  position: Float!
+  title: String!
+  updatedAt: DateTime!
+  url: String!
+  userId: String!
+}
+
+input SocialLinkOrderInput {
+  id: String!
+  position: Float!
+}
+
 input SocialLinkRemoveInput {
   url: String!
+}
+
+input StreamFiltersInput {
+  searchTerm: String
+  skip: Float
+  take: Float
+}
+
+type StreamModel {
+  createdAt: DateTime!
+  id: ID!
+  ingressId: String
+  isLive: Boolean!
+  serverUrl: String
+  streamKey: String
+  thumbnailUrl: String
+  title: String!
+  updatedAt: DateTime!
+  userId: String!
 }
 
 type TotpModel {
@@ -145,6 +192,8 @@ type UserModel {
   isTotpEnabled: Boolean!
   isVerified: Boolean!
   password: String!
+  socialLinks: [SocialLinkModel!]
+  stream: StreamModel
   totpSecret: String
   updatedAt: DateTime!
   username: String!

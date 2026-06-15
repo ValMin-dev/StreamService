@@ -7,8 +7,11 @@ import type { User } from '@prisma/client'
 import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js'
 import * as Upload from 'graphql-upload/Upload.js'
 import { FileValidationPipe } from '@/src/shared/pipes/file-validatoon.pipe'
-import { SocialLinkInput } from './inputs/social-link.input'
-import { SocialLinkRemoveInput } from './inputs/social-link-remove.input'
+import {
+	SocialLinkInput,
+	SocialLinkOrderInput,
+	SocialLinkRemoveInput
+} from './inputs/social-link.input'
 @Resolver('Profile')
 export class ProfileResolver {
 	constructor(private readonly profileService: ProfileService) {}
@@ -20,6 +23,16 @@ export class ProfileResolver {
 		@Authorized() user: User
 	) {
 		return this.profileService.changeProfile(user, input)
+	}
+
+	@Authorization()
+	@Mutation(() => Boolean, { name: 'updateSocialLink' })
+	async updateSocialLink(
+		@Args('id') id: string,
+		@Args('data') input: SocialLinkInput,
+		@Authorized() user: User
+	) {
+		return this.profileService.updateSocialLink(id, input, user)
 	}
 
 	@Authorization()
@@ -38,6 +51,16 @@ export class ProfileResolver {
 		@Authorized() user: User
 	) {
 		return this.profileService.createSocialLink(user, input)
+	}
+
+	@Authorization()
+	@Mutation(() => Boolean, { name: 'reorderSocialLinks' })
+	async reorderSocialLinks(
+		@Args('data', { type: () => [SocialLinkOrderInput] })
+		input: SocialLinkOrderInput[],
+		@Authorized() user: User
+	) {
+		return this.profileService.reorderSocialLinks(user, input)
 	}
 
 	@Authorization()

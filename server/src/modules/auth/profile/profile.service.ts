@@ -5,8 +5,11 @@ import { User } from '@prisma/client'
 import * as Upload from 'graphql-upload/Upload.js'
 import * as sharp from 'sharp'
 import { ChangeProfileInfoInput } from './inputs/change-profile-info.input'
-import { SocialLinkInput } from './inputs/social-link.input'
-import { SocialLinkRemoveInput } from './inputs/social-link-remove.input'
+import {
+	SocialLinkInput,
+	SocialLinkOrderInput,
+	SocialLinkRemoveInput
+} from './inputs/social-link.input'
 
 @Injectable()
 export class ProfileService {
@@ -19,8 +22,40 @@ export class ProfileService {
 		return this.prisma.socialLink.findMany({
 			where: {
 				userId: user.id
+			},
+			orderBy: { position: 'asc' }
+		})
+	}
+
+	async updateSocialLink(id: string, input: SocialLinkInput, user: User) {
+		const { title, url } = input
+		await this.prisma.socialLink.update({
+			where: { id, userId: user.id },
+			data: {
+				title,
+				url
 			}
 		})
+		return true
+	}
+
+	async reorderSocialLinks(user: User, input: SocialLinkOrderInput[]) {
+		if (!input.length) {
+			return
+		}
+		const updatePromises = input.map(link =>
+			this.prisma.socialLink.updateMany({
+				where: {
+					id: link.id,
+					userId: user.id
+				},
+				data: {
+					position: link.position
+				}
+			})
+		)
+		await Promise.all(updatePromises)
+		return true
 	}
 
 	async removeSocialLink(user: User, input: SocialLinkRemoveInput) {
@@ -116,6 +151,12 @@ export class ProfileService {
 					})
 					.webp({ quality: 80, effort: 6 })
 					.toBuffer()
+
+				await this.storageService.upload(
+					processedBuffer,
+					fileName,
+					'image/webp'
+				)
 			}
 
 			await this.prisma.user.update({
