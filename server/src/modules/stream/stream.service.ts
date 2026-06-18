@@ -6,11 +6,15 @@ import { ChangeStreamInfoInput } from './inputs/change-stream.input'
 import * as Upload from 'graphql-upload/Upload.js'
 import * as sharp from 'sharp'
 import { StorageService } from '../libs/storage/storage.service'
+import { GenerateStreamTokenInput } from './inputs/generate-stream-token.input'
+import { ConfigService } from '@nestjs/config/dist/config.service'
+import { AccessToken } from 'livekit-server-sdk'
 @Injectable()
 export class StreamService {
 	constructor(
 		private readonly prisma: PrismaService,
-		private readonly storageService: StorageService
+		private readonly storageService: StorageService,
+		private readonly configService: ConfigService
 	) {}
 
 	async findAll(input: StreamFiltersInput = {}) {
@@ -167,6 +171,48 @@ export class StreamService {
 			)
 		}
 		return stream
+	}
+
+	async generateToken(input: GenerateStreamTokenInput) {
+		const { userId, channelId } = input
+		let self: { id: string; username: string }
+
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId }
+		})
+		if (user) {
+			self = { id: user.id, username: user.username }
+		} else {
+			self = {
+				id: userId,
+				username: `Watcher ${Math.floor(Math.random() * 100000)}`
+			}
+		}
+
+		const channel = await this.prisma.user.findUnique({
+			where: { id: channelId }
+		})
+		if (!channel) {
+			throw new BadRequestException('Channel not found')
+		}
+		const isHost = self.id === channel.id
+
+		const token = new AccessToken(
+			this.configService.get('LIVEKIT_API_KEY'),
+			this.configService.get('LIVEKIT_API_SECRET'),
+			{
+				identity: isHost ? `Host-${self.id}` : `Watcher-${self.id}`,
+				name: self.username,
+				ttl: 3600 // 1 hour
+			}
+		)
+		token.addGrant({
+			roomJoin: true,
+			room: channel.id,
+			canPublish: false
+		})
+
+		return { token: token.toJwt() }
 	}
 
 	private findBySearchTermFilter(
