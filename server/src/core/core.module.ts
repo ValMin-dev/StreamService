@@ -17,6 +17,8 @@ import { CronModule } from '../modules/cron/cron.module'
 import { StorageModule } from '../modules/libs/storage/storage.module'
 import { ProfileModule } from '../modules/auth/profile/profile.module'
 import { StreamModule } from '../modules/stream/stream.module'
+import { LivekitModule } from '../models/libs/livekit/livekit.module'
+import { getLiveKitConfig } from './config/livekit.config'
 @Module({
 	imports: [
 		PrismaModule,
@@ -31,6 +33,11 @@ import { StreamModule } from '../modules/stream/stream.module'
 		StorageModule,
 		ProfileModule,
 		StreamModule,
+		LivekitModule.registerAsync({
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: getLiveKitConfig
+		}),
 		GraphQLModule.forRootAsync({
 			driver: ApolloDriver,
 			useFactory: getGraphQLConfig,
