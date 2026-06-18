@@ -1,5 +1,5 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { MailService } from '../../libs/mail/mail.service'
 import { ConfigService } from '@nestjs/config'
 import type { Request } from 'express'
@@ -26,11 +26,11 @@ export class DeactivateService {
 		const { email, password, pin } = input
 
 		if (email !== user.email) {
-			throw new Error('Email does not match')
+			throw new BadRequestException('Email does not match')
 		}
 		const isValidPassword = await verify(user.password, password)
 		if (!isValidPassword) {
-			throw new Error('Password does not match')
+			throw new BadRequestException('Password does not match')
 		}
 
 		if (!pin) {
@@ -49,12 +49,12 @@ export class DeactivateService {
 			}
 		})
 		if (!existingToken) {
-			throw new Error('Invalid token')
+			throw new BadRequestException('Invalid token')
 		}
 
 		const hasExpired = new Date(existingToken.expiresIn) < new Date()
 		if (hasExpired) {
-			throw new Error('Token has expired')
+			throw new BadRequestException('Token has expired')
 		}
 
 		await this.prisma.user.update({

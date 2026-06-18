@@ -1,5 +1,5 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { StreamFiltersInput } from './inputs/filters.input'
 import type { Prisma, User } from '@prisma/client'
 import { ChangeStreamInfoInput } from './inputs/change-stream.input'
@@ -75,7 +75,7 @@ export class StreamService {
 			}
 		})
 		if (!usersStream) {
-			throw new Error(
+			throw new BadRequestException(
 				'Stream not found or you do not have permission to update it.'
 			)
 		}
@@ -162,7 +162,7 @@ export class StreamService {
 			}
 		})
 		if (!stream) {
-			throw new Error(
+			throw new BadRequestException(
 				'Stream not found or you do not have permission to update it.'
 			)
 		}

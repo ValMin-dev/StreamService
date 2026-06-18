@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { MailService } from '../../libs/mail/mail.service'
 import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { ResetPasswordInput } from './inputs/reset-password.input'
@@ -27,12 +27,12 @@ export class PasswordRecoveryService {
 			}
 		})
 		if (!existingToken) {
-			throw new Error('Invalid token')
+			throw new BadRequestException('Invalid token')
 		}
 
 		const hasExpired = existingToken.expiresIn < new Date()
 		if (hasExpired) {
-			throw new Error('Token has expired')
+			throw new BadRequestException('Token has expired')
 		}
 
 		await this.prisma.user.update({
@@ -64,7 +64,7 @@ export class PasswordRecoveryService {
 			}
 		})
 		if (!user) {
-			throw new Error('User with this email does not exist')
+			throw new BadRequestException('User with this email does not exist')
 		}
 		const resetToken = await generateToken(
 			this.prisma,

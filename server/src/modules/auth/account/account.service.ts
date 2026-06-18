@@ -1,5 +1,5 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateUserInput } from './inputs/create-user.input'
 import { hash, verify } from 'argon2'
 import { VerificationService } from '../verification/verification.service'
@@ -56,7 +56,7 @@ export class AccountService {
 		})
 
 		if (existingUser) {
-			throw new Error('User with this email already exists')
+			throw new BadRequestException('User with this email already exists')
 		}
 
 		const existingUsername = await this.prismaService.user.findUnique({
@@ -66,7 +66,9 @@ export class AccountService {
 		})
 
 		if (existingUsername) {
-			throw new Error('User with this username already exists')
+			throw new BadRequestException(
+				'User with this username already exists'
+			)
 		}
 
 		const user = await this.prismaService.user.create({
@@ -96,7 +98,7 @@ export class AccountService {
 			}
 		})
 		if (existingUser) {
-			throw new Error('User with this email already exists')
+			throw new BadRequestException('User with this email already exists')
 		}
 		await this.prismaService.user.update({
 			where: {
@@ -116,7 +118,7 @@ export class AccountService {
 
 		const isValidPassword = await verify(user.password, password)
 		if (!isValidPassword) {
-			throw new Error('Invalid current password')
+			throw new BadRequestException('Invalid current password')
 		}
 
 		await this.prismaService.user.update({

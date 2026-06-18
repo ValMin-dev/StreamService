@@ -1,5 +1,5 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { User } from '@prisma/client'
 import { encode } from 'hi-base32'
 import { randomBytes } from 'crypto'
@@ -44,7 +44,7 @@ export class TotpService {
 		const delta = totp.validate({ token: pin })
 
 		if (delta === null) {
-			throw new Error('Invalid PIN')
+			throw new BadRequestException('Invalid PIN')
 		}
 
 		await this.prisma.user.update({

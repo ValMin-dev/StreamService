@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { StorageService } from '../../libs/storage/storage.service'
 import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { User } from '@prisma/client'
@@ -67,7 +67,7 @@ export class ProfileService {
 			}
 		})
 		if (!socialLink) {
-			throw new Error('Social link not found')
+			throw new BadRequestException('Social link not found')
 		}
 		await this.prisma.socialLink.delete({
 			where: {
@@ -105,7 +105,7 @@ export class ProfileService {
 			where: { username: username }
 		})
 		if (existingUser && existingUser.id !== user.id) {
-			throw new Error('Username is already taken')
+			throw new BadRequestException('Username is already taken')
 		}
 
 		await this.prisma.user.update({

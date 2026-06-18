@@ -19,8 +19,13 @@ import { ProfileModule } from '../modules/auth/profile/profile.module'
 import { StreamModule } from '../modules/stream/stream.module'
 import { LivekitModule } from '../models/libs/livekit/livekit.module'
 import { getLiveKitConfig } from './config/livekit.config'
+import { IngressModule } from '../modules/stream/ingress/ingress.module'
 @Module({
 	imports: [
+		ConfigModule.forRoot({
+			ignoreEnvFile: !IS_DEV_ENV,
+			isGlobal: true
+		}),
 		PrismaModule,
 		AccountModule,
 		SessionModule,
@@ -33,6 +38,7 @@ import { getLiveKitConfig } from './config/livekit.config'
 		StorageModule,
 		ProfileModule,
 		StreamModule,
+		IngressModule,
 		LivekitModule.registerAsync({
 			imports: [ConfigModule],
 			inject: [ConfigService],
@@ -43,10 +49,6 @@ import { getLiveKitConfig } from './config/livekit.config'
 			useFactory: getGraphQLConfig,
 			imports: [ConfigModule],
 			inject: [ConfigService]
-		}),
-		ConfigModule.forRoot({
-			ignoreEnvFile: !IS_DEV_ENV,
-			isGlobal: true
 		}),
 		RedisModule
 	]

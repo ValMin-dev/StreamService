@@ -2,6 +2,7 @@ import type { User } from '@prisma/client'
 import type { SessionMetadata } from '../types/session-metadata.types'
 import type { Request } from 'express'
 import { ConfigService } from '@nestjs/config'
+import { BadRequestException } from '@nestjs/common'
 
 export function saveSession(
 	req: Request,
@@ -14,7 +15,7 @@ export function saveSession(
 		req.session.metadata = metadata
 		req.session.save(err => {
 			if (err) {
-				return reject(new Error('Failed to save session'))
+				return reject(new BadRequestException('Failed to save session'))
 			}
 			console.log('Session saved successfully:', user)
 			resolve(user)
@@ -26,7 +27,9 @@ export function destroySession(req: Request, configService: ConfigService) {
 	return new Promise((resolve, reject) => {
 		req.session.destroy(err => {
 			if (err) {
-				return reject(new Error('Failed to destroy session'))
+				return reject(
+					new BadRequestException('Failed to destroy session')
+				)
 			} else {
 				const cookieName = configService.getOrThrow<string>(
 					'SESSION_COOKIE_NAME'

@@ -1,3 +1,5 @@
+import { BadRequestException } from '@nestjs/common'
+
 export function parseBoolean(value: string): boolean {
 	if (typeof value === 'boolean') {
 		return value
@@ -13,7 +15,7 @@ export function parseBoolean(value: string): boolean {
 		}
 	}
 
-	throw new Error(
+	throw new BadRequestException(
 		`Не удалось преобразовать значение "${value}" в логическое значение.`
 	)
 }

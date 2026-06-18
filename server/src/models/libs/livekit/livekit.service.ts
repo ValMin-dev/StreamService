@@ -1,10 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common'
+import {
+	Inject,
+	Injectable,
+	InternalServerErrorException
+} from '@nestjs/common'
 import {
 	IngressClient,
 	RoomServiceClient,
 	WebhookReceiver
 } from 'livekit-server-sdk'
-import { TypeLiveKitOptions } from './types/livekit.types'
+import { LiveKitOptionsSymbol, TypeLiveKitOptions } from './types/livekit.types'
 @Injectable()
 export class LivekitService {
 	private roomService: RoomServiceClient
@@ -12,9 +16,15 @@ export class LivekitService {
 	private webhookReceiver: WebhookReceiver
 
 	constructor(
-		@Inject('LiveKitOptionsSymbol')
+		@Inject(LiveKitOptionsSymbol)
 		private readonly options: TypeLiveKitOptions
 	) {
+		if (!options.apiUrl || !options.apiKey || !options.apiSecret) {
+			throw new InternalServerErrorException(
+				'LiveKit config is missing. Set LIVEKIT_API_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET.'
+			)
+		}
+
 		this.roomService = new RoomServiceClient(
 			this.options.apiUrl,
 			this.options.apiKey,

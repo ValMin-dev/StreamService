@@ -1,3 +1,5 @@
+import { BadRequestException } from '@nestjs/common'
+
 const s = 1000
 const m = s * 60
 const h = m * 60
@@ -47,7 +49,7 @@ export type StringValue =
 
 export function ms(str: StringValue): number {
 	if (typeof str !== 'string' || str.length === 0 || str.length > 100) {
-		throw new Error(
+		throw new BadRequestException(
 			'Value provided to ms() must be a string with length between 1 and 99.'
 		)
 	}
@@ -104,7 +106,7 @@ export function ms(str: StringValue): number {
 		case 'ms':
 			return n
 		default:
-			throw new Error(
+			throw new BadRequestException(
 				`Ошибка: единица времени ${type} была распознана, но не существует соответствующего случая. Пожалуйста, проверьте введенные данные.`
 			)
 	}

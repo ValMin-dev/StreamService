@@ -1,5 +1,5 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { LoginInput } from './inputs/login.input'
 import { verify } from 'argon2'
 import type { Request } from 'express'
@@ -22,7 +22,7 @@ export class SessionService {
 	async findByUser(req: Request) {
 		const userId = req.session?.userId
 		if (!userId) {
-			throw new Error('Unauthorized')
+			throw new BadRequestException('Unauthorized')
 		}
 		const keys = await this.redisService.keys('*')
 		const userSessions = []
@@ -47,7 +47,7 @@ export class SessionService {
 		)
 
 		if (!session) {
-			throw new Error('Session not found')
+			throw new BadRequestException('Session not found')
 		}
 		const sessionData = JSON.parse(session)
 		return { ...sessionData, id: sessionId }
@@ -62,7 +62,7 @@ export class SessionService {
 
 	async remove(req: Request, sessionId: string) {
 		if (sessionId === req.session.id) {
-			throw new Error(
+			throw new BadRequestException(
 				'Cannot remove current session using this endpoint. Use clearSession instead.'
 			)
 		}
@@ -94,19 +94,19 @@ export class SessionService {
 			}
 		})
 		if (!user) {
-			throw new Error('Invalid login credentials')
+			throw new BadRequestException('Invalid login credentials')
 		}
 
 		if (!user.isEmailVerified) {
 			await this.verificationService.sendVerificationToken(user)
-			throw new Error(
+			throw new BadRequestException(
 				'Email not verified. A new verification email has been sent.'
 			)
 		}
 
 		const isPasswordValid = await verify(user.password, password)
 		if (!isPasswordValid) {
-			throw new Error('Invalid login credentials')
+			throw new BadRequestException('Invalid login credentials')
 		}
 
 		if (user.isTotpEnabled) {
@@ -125,7 +125,7 @@ export class SessionService {
 			})
 			const delta = totp.validate({ token: pin })
 			if (delta === null) {
-				throw new Error('Invalid TOTP code')
+				throw new BadRequestException('Invalid TOTP code')
 			}
 		}
 

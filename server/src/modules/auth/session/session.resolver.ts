@@ -8,6 +8,7 @@ import { Authorization } from '@/src/shared/decorators/auth.decorator'
 import { UserAgent } from '@/src/shared/decorators/user-agent.decorator'
 import { SessionModel } from './models/session.model'
 import { AuthModel } from '../account/models/auth.model'
+import { BadRequestException } from '@nestjs/common'
 
 @Resolver('Session')
 export class SessionResolver {
@@ -18,7 +19,7 @@ export class SessionResolver {
 	async me(@Authorized('id') id: string, @Context() { req }: GqlContext) {
 		const userId = req.session?.userId
 		if (!userId) {
-			throw new Error('Unauthorized')
+			throw new BadRequestException('Unauthorized')
 		}
 		console.log('Fetching user with ID:', userId)
 		return this.sessionService.me(userId)

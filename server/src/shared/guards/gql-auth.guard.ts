@@ -1,5 +1,6 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
 import {
+	BadRequestException,
 	type CanActivate,
 	type ExecutionContext,
 	Injectable
@@ -15,7 +16,7 @@ export class GqlAuthGuard implements CanActivate {
 		const { req } = ctx.getContext()
 
 		if (typeof req.session?.userId === 'undefined') {
-			throw new Error('Unauthorized')
+			throw new BadRequestException('Unauthorized')
 		}
 		const user = this.prisma.user.findUnique({
 			where: {

@@ -1,5 +1,5 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { MailService } from '../../libs/mail/mail.service'
 import { VerificationInput } from './inputs/verification.input'
 import { TokenType, User } from '@prisma/client'
@@ -24,12 +24,12 @@ export class VerificationService {
 			}
 		})
 		if (!existingToken) {
-			throw new Error('Invalid token')
+			throw new BadRequestException('Invalid token')
 		}
 
 		const hasExpired = new Date(existingToken.expiresIn) < new Date()
 		if (hasExpired) {
-			throw new Error('Token has expired')
+			throw new BadRequestException('Token has expired')
 		}
 
 		const user = await this.prisma.user.update({
