@@ -33,7 +33,8 @@ export class StreamService {
 				...whereClause
 			},
 			include: {
-				user: true
+				user: true,
+				category: true
 			},
 			orderBy: { createdAt: 'desc' }
 		})
@@ -61,7 +62,8 @@ export class StreamService {
 				}
 			},
 			include: {
-				user: true
+				user: true,
+				category: true
 			},
 			orderBy: { createdAt: 'desc' },
 			skip: 0,
@@ -71,7 +73,7 @@ export class StreamService {
 	}
 
 	async updateStreamInfo(user: User, input: ChangeStreamInfoInput) {
-		const { title } = input
+		const { title, categoryId } = input
 
 		const usersStream = await this.prisma.stream.findFirst({
 			where: {
@@ -87,7 +89,12 @@ export class StreamService {
 		await this.prisma.stream.update({
 			where: { userId: user.id },
 			data: {
-				title
+				title,
+				category: {
+					connect: {
+						id: categoryId
+					}
+				}
 			}
 		})
 

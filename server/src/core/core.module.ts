@@ -21,6 +21,7 @@ import { LivekitModule } from '../models/libs/livekit/livekit.module'
 import { getLiveKitConfig } from './config/livekit.config'
 import { IngressModule } from '../modules/stream/ingress/ingress.module'
 import { WebhookModule } from '../modules/webhook/webhook.module'
+import { CategoryModule } from '../modules/category/category.module'
 @Module({
 	imports: [
 		ConfigModule.forRoot({
@@ -41,6 +42,7 @@ import { WebhookModule } from '../modules/webhook/webhook.module'
 		StreamModule,
 		WebhookModule,
 		IngressModule,
+		CategoryModule,
 		LivekitModule.registerAsync({
 			imports: [ConfigModule],
 			inject: [ConfigService],
