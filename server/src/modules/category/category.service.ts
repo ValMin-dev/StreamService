@@ -7,7 +7,15 @@ export class CategoryService {
 
 	async findAll() {
 		const categories = await this.prisma.category.findMany({
-			orderBy: { createdAt: 'asc' }
+			orderBy: { createdAt: 'asc' },
+			include: {
+				streams: {
+					include: {
+						category: true,
+						user: true
+					}
+				}
+			}
 		})
 		if (!categories) {
 			throw new BadRequestException('No categories found')
@@ -25,7 +33,15 @@ export class CategoryService {
 
 		const categories = await this.prisma.category.findMany({
 			take: total,
-			skip: 0
+			skip: 0,
+			include: {
+				streams: {
+					include: {
+						category: true,
+						user: true
+					}
+				}
+			}
 		})
 
 		return Array.from(randomIndexes).map(index => categories[index])

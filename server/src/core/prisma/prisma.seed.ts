@@ -1,11 +1,17 @@
 import { BadRequestException, Logger } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { CATEGORIES } from './data/categories.data'
 import { USERNAMES } from './data/users.data'
 import { hash } from 'argon2'
 import { STREAMS } from './data/streams.data'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+	transactionOptions: {
+		maxWait: 5000, // 5 seconds
+		timeout: 10000, // 10 seconds
+		isolationLevel: Prisma.TransactionIsolationLevel.Serializable // Highest isolation level
+	}
+})
 async function main() {
 	try {
 		Logger.log('Starting database seeding...')
@@ -29,6 +35,7 @@ async function main() {
 		const uniqueUsernames = [
 			...new Set(USERNAMES.map(username => username.toLowerCase()))
 		]
+		const passwordHash = await hash('password123')
 
 		await prisma.$transaction(async tx => {
 			for (const username of uniqueUsernames) {
@@ -52,7 +59,7 @@ async function main() {
 							username,
 							displayName: username,
 							email: `${username}@example.com`,
-							password: await hash('password123'),
+							password: passwordHash,
 							avatarUrl: `/channels/${username}.png`,
 							isDeactivated: false,
 							isEmailVerified: false,

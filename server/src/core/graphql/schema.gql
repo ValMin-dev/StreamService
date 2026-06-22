@@ -38,6 +38,17 @@ input ChangeStreamInfoInput {
   title: String!
 }
 
+type ChatMessageModel {
+  createdAt: DateTime!
+  id: String!
+  stream: StreamModel!
+  streamId: String!
+  text: String!
+  updatedAt: DateTime!
+  user: UserModel!
+  userId: String!
+}
+
 input CreateUserInput {
   email: String!
   password: String!
@@ -90,6 +101,7 @@ input LoginInput {
 
 type Mutation {
   changeAvatar(avatarUrl: Upload!): Boolean!
+  changeChatSettings: Boolean!
   changeEmail(data: ChangeEmailInput!): Boolean!
   changePassword(data: ChangePasswordInput!): Boolean!
   changeProfileInfo(data: ChangeProfileInfoInput!): Boolean!
@@ -102,6 +114,7 @@ type Mutation {
   deactivateAccount(data: DeactivateAccountInput!): AuthModel!
   disableTotp: Boolean!
   enableTotp(data: EnableTotpInput!): Boolean!
+  findMessagesByStream: Boolean!
   generateStreamToken(data: GenerateStreamTokenInput!): GenerateStreamTokenModel!
   loginUser(data: LoginInput!): AuthModel!
   logoutUser: Boolean!
@@ -112,6 +125,7 @@ type Mutation {
   removeStreamThumbnail: Boolean!
   reorderSocialLinks(data: [SocialLinkOrderInput!]!): Boolean!
   resetPassword(data: ResetPasswordInput!): Boolean!
+  sendMessage: Boolean!
   updateSocialLink(data: SocialLinkInput!, id: String!): Boolean!
   verifyAccount(data: VerificationInput!): UserModel!
 }
@@ -186,15 +200,20 @@ input StreamFiltersInput {
 type StreamModel {
   category: CategoryModel
   categoryId: String
+  chatMessages: [ChatMessageModel!]
   createdAt: DateTime!
   id: ID!
   ingressId: String
+  isChatEnabled: Boolean!
+  isChatFollowersOnly: Boolean!
+  isChatPremiumOnly: Boolean!
   isLive: Boolean!
   serverUrl: String
   streamKey: String
   thumbnailUrl: String
   title: String!
   updatedAt: DateTime!
+  user: UserModel!
   userId: String!
 }
 

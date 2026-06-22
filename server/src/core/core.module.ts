@@ -22,6 +22,7 @@ import { getLiveKitConfig } from './config/livekit.config'
 import { IngressModule } from '../modules/stream/ingress/ingress.module'
 import { WebhookModule } from '../modules/webhook/webhook.module'
 import { CategoryModule } from '../modules/category/category.module'
+import { ChatModule } from '../modules/chat/chat.module'
 @Module({
 	imports: [
 		ConfigModule.forRoot({
@@ -43,6 +44,7 @@ import { CategoryModule } from '../modules/category/category.module'
 		WebhookModule,
 		IngressModule,
 		CategoryModule,
+		ChatModule,
 		LivekitModule.registerAsync({
 			imports: [ConfigModule],
 			inject: [ConfigService],
