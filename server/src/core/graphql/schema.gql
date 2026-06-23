@@ -83,6 +83,10 @@ input EnableTotpInput {
   secret: String!
 }
 
+input FollowInput {
+  followingId: String!
+}
+
 input GenerateStreamTokenInput {
   channelId: String!
   userId: String!
@@ -120,6 +124,9 @@ type Mutation {
   deactivateAccount(data: DeactivateAccountInput!): AuthModel!
   disableTotp: Boolean!
   enableTotp(data: EnableTotpInput!): Boolean!
+  findMyFollowers: [UserModel!]!
+  findMyFollowings: [UserModel!]!
+  follow(data: FollowInput!): Boolean!
   generateStreamToken(data: GenerateStreamTokenInput!): GenerateStreamTokenModel!
   loginUser(data: LoginInput!): AuthModel!
   logoutUser: Boolean!
@@ -131,6 +138,7 @@ type Mutation {
   reorderSocialLinks(data: [SocialLinkOrderInput!]!): Boolean!
   resetPassword(data: ResetPasswordInput!): Boolean!
   sendMessage(data: SendMessageInput!): ChatMessageModel!
+  unFollow(data: FollowInput!): Boolean!
   updateSocialLink(data: SocialLinkInput!, id: String!): Boolean!
   verifyAccount(data: VerificationInput!): UserModel!
 }

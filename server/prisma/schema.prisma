@@ -31,6 +31,8 @@ model User {
   socialLinks   SocialLink[]
   stream        Stream?
   chatMessages  ChatMessage[]
+  followers     Follow[]      @relation("followers")
+  followings    Follow[]      @relation("followings")
 
   @@map("users")
 }
@@ -73,6 +75,23 @@ model Stream {
   isChatPremiumOnly   Boolean       @default(false) @map("is_chat_premium_only")
 
   @@map("streams")
+}
+
+model Follow {
+  id         String @id @default(uuid())
+  followerId String @map("follower_id")
+  follower   User   @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followingId String @map("following_id")
+  following   User   @relation("followings", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
 }
 
 model ChatMessage {
