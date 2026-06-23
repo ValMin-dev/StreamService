@@ -19,8 +19,8 @@ export class ChatService {
 		return messages
 	}
 
-	async createMessage(streamId: string, user: User, input: SendMessageInput) {
-		const { text } = input
+	async createMessage(user: User, input: SendMessageInput) {
+		const { text, streamId } = input
 		if (!text || text.trim() === '') {
 			throw new BadRequestException('Message text cannot be empty')
 		}
@@ -35,14 +35,15 @@ export class ChatService {
 			throw new BadRequestException('Stream is not live')
 		}
 
-		await this.prisma.chatMessage.create({
+		const message = await this.prisma.chatMessage.create({
 			data: {
 				stream: { connect: { id: streamId } },
 				user: { connect: { id: user.id } },
 				text
-			}
+			},
+			include: { stream: true }
 		})
-		return true
+		return message
 	}
 
 	async changeSettings(user: User, input: ChangeChatSettingsInput) {

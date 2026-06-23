@@ -7,4 +7,9 @@ export class SendMessageInput {
 	@IsString()
 	@IsNotEmpty()
 	text: string
+
+	@Field(() => String)
+	@IsString()
+	@IsNotEmpty()
+	streamId: string
 }

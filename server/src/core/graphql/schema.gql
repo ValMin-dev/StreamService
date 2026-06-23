@@ -18,6 +18,12 @@ type CategoryModel {
   updatedAt: DateTime!
 }
 
+input ChangeChatSettingsInput {
+  isChatEnabled: Boolean!
+  isChatFollowersOnly: Boolean!
+  isChatPremiumOnly: Boolean!
+}
+
 input ChangeEmailInput {
   email: String!
 }
@@ -101,7 +107,7 @@ input LoginInput {
 
 type Mutation {
   changeAvatar(avatarUrl: Upload!): Boolean!
-  changeChatSettings: Boolean!
+  changeChatSettings(data: ChangeChatSettingsInput!): Boolean!
   changeEmail(data: ChangeEmailInput!): Boolean!
   changePassword(data: ChangePasswordInput!): Boolean!
   changeProfileInfo(data: ChangeProfileInfoInput!): Boolean!
@@ -114,7 +120,6 @@ type Mutation {
   deactivateAccount(data: DeactivateAccountInput!): AuthModel!
   disableTotp: Boolean!
   enableTotp(data: EnableTotpInput!): Boolean!
-  findMessagesByStream: Boolean!
   generateStreamToken(data: GenerateStreamTokenInput!): GenerateStreamTokenModel!
   loginUser(data: LoginInput!): AuthModel!
   logoutUser: Boolean!
@@ -125,7 +130,7 @@ type Mutation {
   removeStreamThumbnail: Boolean!
   reorderSocialLinks(data: [SocialLinkOrderInput!]!): Boolean!
   resetPassword(data: ResetPasswordInput!): Boolean!
-  sendMessage: Boolean!
+  sendMessage(data: SendMessageInput!): ChatMessageModel!
   updateSocialLink(data: SocialLinkInput!, id: String!): Boolean!
   verifyAccount(data: VerificationInput!): UserModel!
 }
@@ -141,6 +146,7 @@ type Query {
   findAllStreams(data: StreamFiltersInput!): [StreamModel!]!
   findAllUsers: [UserModel!]!
   findCurrentSession: SessionModel!
+  findMessagesByStream(streamId: String!): Boolean!
   findProfile: UserModel!
   findRandomCategories: [CategoryModel!]!
   findRandomStreams: [StreamModel!]!
@@ -152,6 +158,11 @@ type Query {
 
 input ResetPasswordInput {
   email: String!
+}
+
+input SendMessageInput {
+  streamId: String!
+  text: String!
 }
 
 type SessionMetadataModel {
@@ -215,6 +226,10 @@ type StreamModel {
   updatedAt: DateTime!
   user: UserModel!
   userId: String!
+}
+
+type Subscription {
+  chatMessageAdded(streamId: String!): ChatMessageModel!
 }
 
 type TotpModel {
