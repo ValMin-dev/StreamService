@@ -10,13 +10,13 @@ datasource db {
 model User {
   id String @id @default(uuid())
 
-  email       String  @unique
-  username    String? @unique
-  displayName String? @map("display_name")
-  password    String
-  avatarUrl   String? @map("avatar_url")
-  bio         String?
-
+  email           String  @unique
+  username        String? @unique
+  displayName     String? @map("display_name")
+  password        String
+  avatarUrl       String? @map("avatar_url")
+  bio             String?
+  telegramId      String? @unique @map("telegram_id")
   isVerified      Boolean @default(false) @map("is_verified")
   isEmailVerified Boolean @default(false) @map("is_email_verified")
   tokens          Token[]
@@ -26,13 +26,15 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  isDeactivated Boolean       @default(false) @map("is_deactivated")
-  deactivatedAt DateTime?     @map("deactivated_at")
-  socialLinks   SocialLink[]
-  stream        Stream?
-  chatMessages  ChatMessage[]
-  followers     Follow[]      @relation("followers")
-  followings    Follow[]      @relation("followings")
+  isDeactivated        Boolean               @default(false) @map("is_deactivated")
+  deactivatedAt        DateTime?             @map("deactivated_at")
+  socialLinks          SocialLink[]
+  stream               Stream?
+  chatMessages         ChatMessage[]
+  followers            Follow[]              @relation("followers")
+  followings           Follow[]              @relation("followings")
+  notifications        Notification[]
+  notificationSettings NotificationSettings?
 
   @@map("users")
 }
@@ -109,6 +111,35 @@ model ChatMessage {
   @@map("chat_messages")
 }
 
+model Notification {
+  id      String @id @default(uuid())
+  message String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+
+  type   NotificationType
+  isRead Boolean          @default(false) @map("is_read")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("notifications")
+}
+
+model NotificationSettings {
+  id String @id @default(uuid())
+
+  siteNotifications     Boolean @default(true) @map("site_notifications")
+  telegramNotifications Boolean @default(false) @map("telegram_notifications")
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String? @unique @map("user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
 model Category {
   id           String   @id @default(uuid())
   title        String   @unique
@@ -143,4 +174,14 @@ enum TokenType {
   EMAIL_VERIFICATION
   TELEGRAM_AUTH
   DEACTIVATE_ACCOUNT
+}
+
+enum NotificationType {
+  STREAM_START
+  NEW_FOLLOWER
+  NEW_SPONSOR
+  ENABLE_2FA
+  VERIFIED_CHANNEL
+
+  @@map("notification_types")
 }

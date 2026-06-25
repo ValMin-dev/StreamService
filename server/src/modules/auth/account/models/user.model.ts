@@ -26,6 +26,9 @@ export class UserModel implements User {
 	@Field(() => String, { nullable: true })
 	bio: string | null
 
+	@Field(() => String, { nullable: true })
+	telegramId: string | null
+
 	@Field(() => [SocialLinkModel], { nullable: true })
 	socialLinks: SocialLinkModel[] | null
 
