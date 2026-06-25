@@ -87,6 +87,16 @@ input FollowInput {
   followingId: String!
 }
 
+type FollowModel {
+  createdAt: DateTime!
+  follower: UserModel!
+  followerId: String!
+  following: UserModel!
+  followingId: String!
+  id: String!
+  updatedAt: DateTime!
+}
+
 input GenerateStreamTokenInput {
   channelId: String!
   userId: String!
@@ -150,6 +160,8 @@ input NewPasswordInput {
 }
 
 type Query {
+  channelChannelByUsername(username: String!): UserModel!
+  channelFollowersCount(channelId: String!): Float!
   findAllCategories: [CategoryModel!]!
   findAllStreams(data: StreamFiltersInput!): [StreamModel!]!
   findAllUsers: [UserModel!]!
@@ -158,6 +170,7 @@ type Query {
   findProfile: UserModel!
   findRandomCategories: [CategoryModel!]!
   findRandomStreams: [StreamModel!]!
+  findRecommended: [UserModel!]!
   findSessionsByUser: [SessionModel!]!
   findSocialLinks: [SocialLinkModel!]!
   generateTotpSecret: TotpModel!
@@ -255,6 +268,8 @@ type UserModel {
   deactivatedAt: DateTime
   displayName: String!
   email: String!
+  followers: [FollowModel!]
+  followings: [FollowModel!]
   id: ID!
   isDeactivated: Boolean!
   isEmailVerified: Boolean!
