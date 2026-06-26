@@ -3,6 +3,8 @@ import { User } from '@prisma/client'
 import { SocialLinkModel } from '../../profile/model/social-link.model'
 import { StreamModel } from '@/src/modules/stream/models/stream.model'
 import { FollowModel } from '@/src/modules/follow/models/follow.model'
+import { NotificationSettingsModel } from '@/src/modules/notification/models/notification-settings.model'
+import { NotificationModel } from '@/src/modules/notification/models/notification.model'
 @ObjectType()
 export class UserModel implements User {
 	@Field(() => ID)
@@ -58,6 +60,12 @@ export class UserModel implements User {
 
 	@Field(() => [FollowModel], { nullable: true })
 	followings: FollowModel[] | null
+
+	@Field(() => NotificationSettingsModel, { nullable: true })
+	notificationSettings: NotificationSettingsModel | null
+
+	@Field(() => [NotificationModel], { nullable: true })
+	notifications: NotificationModel[] | null
 
 	@Field(() => Date)
 	createdAt: Date

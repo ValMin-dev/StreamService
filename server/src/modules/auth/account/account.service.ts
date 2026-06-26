@@ -77,6 +77,12 @@ export class AccountService {
 				username: username || email.split('@')[0],
 				displayName: username || email.split('@')[0],
 				password: await hash(password),
+				notificationSettings: {
+					create: {
+						siteNotifications: true,
+						telegramNotifications: false
+					}
+				},
 				stream: {
 					create: {
 						title: `${username || email.split('@')[0]}'s Stream`,

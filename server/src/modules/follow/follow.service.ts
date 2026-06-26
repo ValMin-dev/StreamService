@@ -2,10 +2,14 @@ import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { User } from '@prisma/client'
 import { FollowInput } from './inputs/follow.input'
+import { NotificationService } from '../notification/notification.service'
 
 @Injectable()
 export class FollowService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly notificationService: NotificationService
+	) {}
 
 	async findMyFollowers(user: User) {
 		const followers = await this.prisma.follow.findMany({
@@ -49,12 +53,27 @@ export class FollowService {
 			)
 		}
 
-		await this.prisma.follow.create({
+		const follow = await this.prisma.follow.create({
 			data: {
 				follower: { connect: { id: user.id } },
 				following: { connect: { id: followingId } }
+			},
+			include: {
+				follower: true,
+				following: {
+					include: {
+						notificationSettings: true
+					}
+				}
 			}
 		})
+		if (follow.following.notificationSettings?.siteNotifications) {
+			await this.notificationService.createNewFollowing(
+				follow.following,
+				follow.follower
+			)
+		}
+
 		return true
 	}
 
