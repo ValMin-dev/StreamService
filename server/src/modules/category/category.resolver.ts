@@ -2,6 +2,7 @@ import { CategoryService } from './category.service'
 import { Args, Query, Resolver } from '@nestjs/graphql'
 import { CategoryModel } from './models/category.model'
 
+// GraphQL-резолвер відкриває запити до категорій для клієнта.
 @Resolver('Category')
 export class CategoryResolver {
 	constructor(private readonly categoryService: CategoryService) {}

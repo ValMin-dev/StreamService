@@ -8,6 +8,7 @@ import type { Request } from 'express'
 import { getSessionMetadata } from '@/src/shared/utils/session-metadata.util'
 import { NewPasswordInput } from './inputs/new-password.input'
 import { hash } from 'argon2'
+// Сервіс обробляє відновлення пароля: створює токен, надсилає лист і встановлює новий пароль.
 @Injectable()
 export class PasswordRecoveryService {
 	constructor(
@@ -27,12 +28,12 @@ export class PasswordRecoveryService {
 			}
 		})
 		if (!existingToken) {
-			throw new BadRequestException('Invalid token')
+			throw new BadRequestException('Неправильний токен')
 		}
 
 		const hasExpired = existingToken.expiresIn < new Date()
 		if (hasExpired) {
-			throw new BadRequestException('Token has expired')
+			throw new BadRequestException('Термін дії токена минув')
 		}
 
 		await this.prisma.user.update({
@@ -64,7 +65,9 @@ export class PasswordRecoveryService {
 			}
 		})
 		if (!user) {
-			throw new BadRequestException('User with this email does not exist')
+			throw new BadRequestException(
+				'Користувача з такою електронною поштою не існує'
+			)
 		}
 		const resetToken = await generateToken(
 			this.prisma,
@@ -78,7 +81,6 @@ export class PasswordRecoveryService {
 			resetToken.token,
 			metadata
 		)
-		console.log('Password recovery email sent to:', user.email)
 		return true
 	}
 }

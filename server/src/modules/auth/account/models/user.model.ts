@@ -5,6 +5,8 @@ import { StreamModel } from '@/src/modules/stream/models/stream.model'
 import { FollowModel } from '@/src/modules/follow/models/follow.model'
 import { NotificationSettingsModel } from '@/src/modules/notification/models/notification-settings.model'
 import { NotificationModel } from '@/src/modules/notification/models/notification.model'
+
+// GraphQL-модель користувача описує всі поля профілю, зв'язки та додаткові дані акаунта.
 @ObjectType()
 export class UserModel implements User {
 	@Field(() => ID)

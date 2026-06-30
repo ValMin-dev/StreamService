@@ -2,6 +2,7 @@ import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { type User, TokenType } from '@prisma/client'
 import { v4 as uuidv4 } from 'uuid'
 
+// Утиліта створює або перевикористовує одноразовий токен для конкретного типу дії користувача.
 export async function generateToken(
 	prisma: PrismaService,
 	user: User,

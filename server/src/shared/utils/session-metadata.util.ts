@@ -6,6 +6,8 @@ import { lookup } from 'geoip-lite'
 import * as countries from 'i18n-iso-countries'
 
 countries.registerLocale(require('i18n-iso-countries/langs/en.json'))
+
+// Утиліта витягує IP, геолокацію та дані пристрою для збереження метаданих сесії.
 export function getSessionMetadata(
 	req: Request,
 	userAgent: string
@@ -25,7 +27,9 @@ export function getSessionMetadata(
 		ip,
 		location: {
 			city: location?.city || 'unknown',
-			country: countries.getName(location.country, 'en'),
+			country: location?.country
+				? countries.getName(location.country, 'en') || 'unknown'
+				: 'unknown',
 			latitude: location?.ll[0] || 0,
 			longitude: location?.ll[1] || 0
 		},

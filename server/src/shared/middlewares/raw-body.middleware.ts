@@ -4,12 +4,16 @@ import {
 	type NestMiddleware
 } from '@nestjs/common'
 import { NextFunction, Request, Response } from 'express'
-import * as getRawBody from 'raw-body'
+import getRawBody from 'raw-body'
+
+// Middleware читає сире тіло запиту повністю, щоб вебхуки можна було валідовувати підписом.
 @Injectable()
 export class RawBodyMiddleware implements NestMiddleware {
 	use(req: Request, res: Response, next: NextFunction) {
 		if (!req.readable) {
-			return next(new BadRequestException('Request body is not readable'))
+			return next(
+				new BadRequestException('Тіло запиту неможливо прочитати')
+			)
 		}
 		getRawBody(req, {
 			encoding: 'utf8'
@@ -21,7 +25,7 @@ export class RawBodyMiddleware implements NestMiddleware {
 			.catch(err => {
 				next(
 					new BadRequestException(
-						'Failed to read raw body: ' + err.message
+						'Не вдалося прочитати сире тіло запиту: ' + err.message
 					)
 				)
 			})

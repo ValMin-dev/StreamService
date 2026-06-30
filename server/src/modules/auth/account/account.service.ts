@@ -6,6 +6,8 @@ import { VerificationService } from '../verification/verification.service'
 import type { User } from '@prisma/client'
 import { ChangeEmailInput } from './inputs/change-email.input'
 import { ChangePasswordInput } from './inputs/change-password.input'
+
+// Сервіс керує основними діями акаунта: перегляд профілю, створення користувача, зміна email і пароля.
 @Injectable()
 export class AccountService {
 	constructor(
@@ -56,7 +58,9 @@ export class AccountService {
 		})
 
 		if (existingUser) {
-			throw new BadRequestException('User with this email already exists')
+			throw new BadRequestException(
+				'Користувач із такою електронною поштою вже існує'
+			)
 		}
 
 		const existingUsername = await this.prismaService.user.findUnique({
@@ -66,9 +70,7 @@ export class AccountService {
 		})
 
 		if (existingUsername) {
-			throw new BadRequestException(
-				'User with this username already exists'
-			)
+			throw new BadRequestException('Користувач із таким ім’ям вже існує')
 		}
 
 		const user = await this.prismaService.user.create({
@@ -104,9 +106,11 @@ export class AccountService {
 			}
 		})
 		if (existingUser) {
-			throw new BadRequestException('User with this email already exists')
+			throw new BadRequestException(
+				'Користувач із такою електронною поштою вже існує'
+			)
 		}
-		await this.prismaService.user.update({
+		const updatedUser = await this.prismaService.user.update({
 			where: {
 				id: user.id
 			},
@@ -115,7 +119,7 @@ export class AccountService {
 				isVerified: false
 			}
 		})
-		await this.verificationService.sendVerificationToken(user)
+		await this.verificationService.sendVerificationToken(updatedUser)
 		return true
 	}
 
@@ -124,7 +128,7 @@ export class AccountService {
 
 		const isValidPassword = await verify(user.password, password)
 		if (!isValidPassword) {
-			throw new BadRequestException('Invalid current password')
+			throw new BadRequestException('Поточний пароль неправильний')
 		}
 
 		await this.prismaService.user.update({

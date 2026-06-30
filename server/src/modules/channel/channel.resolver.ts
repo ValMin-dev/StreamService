@@ -2,6 +2,7 @@ import { Args, Query, Resolver } from '@nestjs/graphql'
 import { ChannelService } from './channel.service'
 import { UserModel } from '../auth/account/models/user.model'
 
+// GraphQL-резолвер віддає дані каналу клієнту.
 @Resolver('Channel')
 export class ChannelResolver {
 	constructor(private readonly channelService: ChannelService) {}

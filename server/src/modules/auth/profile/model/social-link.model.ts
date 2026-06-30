@@ -1,6 +1,7 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql'
 import { SocialLink } from '@prisma/client'
 
+// GraphQL-модель соціального лінка описує запис профілю користувача.
 @ObjectType()
 export class SocialLinkModel implements SocialLink {
 	@Field(() => ID)

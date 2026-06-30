@@ -1,6 +1,7 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { BadRequestException, Injectable } from '@nestjs/common'
 
+// Сервіс працює з категоріями: повертає всі категорії, випадкові добірки та категорію за slug.
 @Injectable()
 export class CategoryService {
 	constructor(private readonly prisma: PrismaService) {}
@@ -18,7 +19,7 @@ export class CategoryService {
 			}
 		})
 		if (!categories) {
-			throw new BadRequestException('No categories found')
+			throw new BadRequestException('Категорії не знайдено')
 		}
 		return categories
 	}
@@ -60,7 +61,7 @@ export class CategoryService {
 			}
 		})
 		if (!category) {
-			throw new BadRequestException('Category not found')
+			throw new BadRequestException('Категорію не знайдено')
 		}
 		return category
 	}

@@ -4,6 +4,7 @@ import { SendMessageInput } from './inputs/send-message.input'
 import { User } from '@prisma/client'
 import { ChangeChatSettingsInput } from './inputs/change-chat-settings.input'
 
+// Сервіс відповідає за чат стріму: читання повідомлень, відправку і зміну параметрів чату.
 @Injectable()
 export class ChatService {
 	constructor(private readonly prisma: PrismaService) {}
@@ -22,17 +23,19 @@ export class ChatService {
 	async createMessage(user: User, input: SendMessageInput) {
 		const { text, streamId } = input
 		if (!text || text.trim() === '') {
-			throw new BadRequestException('Message text cannot be empty')
+			throw new BadRequestException(
+				'Текст повідомлення не може бути порожнім'
+			)
 		}
 		const stream = await this.prisma.stream.findUnique({
 			where: { id: streamId }
 		})
 		if (!stream) {
-			throw new BadRequestException('Stream not found')
+			throw new BadRequestException('Стрім не знайдено')
 		}
 
 		if (!stream.isLive) {
-			throw new BadRequestException('Stream is not live')
+			throw new BadRequestException('Стрім не запущено')
 		}
 
 		const message = await this.prisma.chatMessage.create({
@@ -54,7 +57,7 @@ export class ChatService {
 		})
 
 		if (!stream) {
-			throw new BadRequestException('Stream not found')
+			throw new BadRequestException('Стрім не знайдено')
 		}
 
 		await this.prisma.stream.update({

@@ -1,5 +1,7 @@
 import { ConfigService } from '@nestjs/config'
 import { MailerOptions } from '@nestjs-modules/mailer'
+
+// Конфігурація описує SMTP-підключення та стандартного відправника для листів.
 export function getMailerConfig(configService: ConfigService): MailerOptions {
 	return {
 		transport: {

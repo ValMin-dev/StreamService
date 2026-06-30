@@ -4,6 +4,7 @@ import type { Request } from 'express'
 import { ConfigService } from '@nestjs/config'
 import { BadRequestException } from '@nestjs/common'
 
+// Утиліти зберігають і знищують сесію користувача в express-session та Redis store.
 export function saveSession(
 	req: Request,
 	user: User,
@@ -15,9 +16,11 @@ export function saveSession(
 		req.session.metadata = metadata
 		req.session.save(err => {
 			if (err) {
-				return reject(new BadRequestException('Failed to save session'))
+				return reject(
+					new BadRequestException('Не вдалося зберегти сесію')
+				)
 			}
-			console.log('Session saved successfully:', user)
+			console.log('Сесію успішно збережено:', user)
 			resolve(user)
 		})
 	})
@@ -28,7 +31,7 @@ export function destroySession(req: Request, configService: ConfigService) {
 		req.session.destroy(err => {
 			if (err) {
 				return reject(
-					new BadRequestException('Failed to destroy session')
+					new BadRequestException('Не вдалося знищити сесію')
 				)
 			} else {
 				const cookieName = configService.getOrThrow<string>(

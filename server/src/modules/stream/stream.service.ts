@@ -9,6 +9,8 @@ import { StorageService } from '../libs/storage/storage.service'
 import { GenerateStreamTokenInput } from './inputs/generate-stream-token.input'
 import { ConfigService } from '@nestjs/config/dist/config.service'
 import { AccessToken } from 'livekit-server-sdk'
+
+// Сервіс керує стрімами: пошук, зміна даних каналу, банери/обкладинки й генерація токена LiveKit.
 @Injectable()
 export class StreamService {
 	constructor(
@@ -82,7 +84,7 @@ export class StreamService {
 		})
 		if (!usersStream) {
 			throw new BadRequestException(
-				'Stream not found or you do not have permission to update it.'
+				'Стрім не знайдено або у вас немає прав на його зміну'
 			)
 		}
 
@@ -174,7 +176,7 @@ export class StreamService {
 		})
 		if (!stream) {
 			throw new BadRequestException(
-				'Stream not found or you do not have permission to update it.'
+				'Стрім не знайдено або у вас немає прав на його зміну'
 			)
 		}
 		return stream
@@ -200,7 +202,7 @@ export class StreamService {
 			where: { id: channelId }
 		})
 		if (!channel) {
-			throw new BadRequestException('Channel not found')
+			throw new BadRequestException('Канал не знайдено')
 		}
 		const isHost = self.id === channel.id
 
@@ -210,7 +212,7 @@ export class StreamService {
 			{
 				identity: isHost ? `Host-${self.id}` : `Watcher-${self.id}`,
 				name: self.username,
-				ttl: 3600 // 1 hour
+				ttl: 3600 // 1 година
 			}
 		)
 		token.addGrant({

@@ -10,6 +10,7 @@ import { destroySession, saveSession } from '@/src/shared/utils/session.util'
 import { VerificationService } from '../verification/verification.service'
 import { TOTP } from 'otpauth'
 
+// Сервіс керує входом, сесіями, TOTP-перевіркою та списком активних сесій користувача.
 @Injectable()
 export class SessionService {
 	constructor(
@@ -22,7 +23,7 @@ export class SessionService {
 	async findByUser(req: Request) {
 		const userId = req.session?.userId
 		if (!userId) {
-			throw new BadRequestException('Unauthorized')
+			throw new BadRequestException('Неавторизований доступ')
 		}
 		const keys = await this.redisService.keys('*')
 		const userSessions = []
@@ -47,7 +48,7 @@ export class SessionService {
 		)
 
 		if (!session) {
-			throw new BadRequestException('Session not found')
+			throw new BadRequestException('Сесію не знайдено')
 		}
 		const sessionData = JSON.parse(session)
 		return { ...sessionData, id: sessionId }
@@ -63,7 +64,7 @@ export class SessionService {
 	async remove(req: Request, sessionId: string) {
 		if (sessionId === req.session.id) {
 			throw new BadRequestException(
-				'Cannot remove current session using this endpoint. Use clearSession instead.'
+				'Неможливо видалити поточну сесію цим ендпоінтом. Використайте clearSession.'
 			)
 		}
 
@@ -94,26 +95,26 @@ export class SessionService {
 			}
 		})
 		if (!user) {
-			throw new BadRequestException('Invalid login credentials')
+			throw new BadRequestException('Невірні дані для входу')
 		}
 
 		if (!user.isEmailVerified) {
 			await this.verificationService.sendVerificationToken(user)
 			throw new BadRequestException(
-				'Email not verified. A new verification email has been sent.'
+				'Електронну пошту не підтверджено. Новий лист для підтвердження надіслано.'
 			)
 		}
 
 		const isPasswordValid = await verify(user.password, password)
 		if (!isPasswordValid) {
-			throw new BadRequestException('Invalid login credentials')
+			throw new BadRequestException('Невірні дані для входу')
 		}
 
 		if (user.isTotpEnabled) {
 			if (!pin) {
 				return {
 					user: null,
-					message: 'TOTP code required'
+					message: 'Потрібен код TOTP'
 				}
 			}
 			const totp = new TOTP({
@@ -125,7 +126,7 @@ export class SessionService {
 			})
 			const delta = totp.validate({ token: pin })
 			if (delta === null) {
-				throw new BadRequestException('Invalid TOTP code')
+				throw new BadRequestException('Невірний код TOTP')
 			}
 		}
 

@@ -4,6 +4,7 @@ import { MailService } from '../libs/mail/mail.service'
 import { Cron } from '@nestjs/schedule'
 import { StorageService } from '../libs/storage/storage.service'
 
+// Сервіс виконує фонові завдання по розкладу, зокрема очищення деактивованих акаунтів.
 @Injectable()
 export class CronService {
 	constructor(
@@ -17,13 +18,13 @@ export class CronService {
 	async deleteDeactivatedAccounts() {
 		const now = new Date()
 		const sevenDaysAgo = new Date()
-		sevenDaysAgo.setDate(sevenDaysAgo.getDay() - 7)
+		sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 		// sevenDaysAgo.setSeconds(sevenDaysAgo.getSeconds() - 5) // Set to the start of the day
 		const deactivatedUsers = await this.prisma.user.findMany({
 			where: {
 				isDeactivated: true,
 				deactivatedAt: {
-					lte: sevenDaysAgo // 7 days ago
+					lte: sevenDaysAgo // 7 днів тому
 				}
 			}
 		})
@@ -36,8 +37,8 @@ export class CronService {
 			}
 		}
 		console.log(
-			`Deleted ${deactivatedUsers.length} deactivated accounts names: ${deactivatedUsers.map(user => user.email).join(', ')}`
-		) // Log the number of deleted accounts
+			`Видалено ${deactivatedUsers.length} деактивованих акаунтів: ${deactivatedUsers.map(user => user.email).join(', ')}`
+		)
 		await this.prisma.user.deleteMany({
 			where: {
 				isDeactivated: true,

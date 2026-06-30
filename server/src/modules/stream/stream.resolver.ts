@@ -12,6 +12,7 @@ import { FileValidationPipe } from '@/src/shared/pipes/file-validatoon.pipe'
 import { GenerateStreamTokenModel } from './models/generate-token.model'
 import { GenerateStreamTokenInput } from './inputs/generate-stream-token.input'
 
+// GraphQL-резолвер підключає стрімові операції до API.
 @Resolver('Stream')
 export class StreamResolver {
 	constructor(private readonly streamService: StreamService) {}

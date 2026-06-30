@@ -6,6 +6,8 @@ import { randomBytes } from 'crypto'
 import { TOTP } from 'otpauth'
 import * as QRCode from 'qrcode'
 import { EnableTotpInput } from './inputs/enable-totp.input'
+
+// Сервіс генерує, перевіряє, вмикає та вимикає TOTP для двофакторної автентифікації.
 @Injectable()
 export class TotpService {
 	constructor(private readonly prisma: PrismaService) {}
@@ -44,7 +46,7 @@ export class TotpService {
 		const delta = totp.validate({ token: pin })
 
 		if (delta === null) {
-			throw new BadRequestException('Invalid PIN')
+			throw new BadRequestException('Невірний PIN-код')
 		}
 
 		await this.prisma.user.update({

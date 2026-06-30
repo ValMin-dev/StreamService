@@ -11,6 +11,7 @@ import {
 	SocialLinkRemoveInput
 } from './inputs/social-link.input'
 
+// Сервіс керує профілем користувача: соціальні лінки, біо, аватар і базові дані облікового запису.
 @Injectable()
 export class ProfileService {
 	constructor(
@@ -67,7 +68,7 @@ export class ProfileService {
 			}
 		})
 		if (!socialLink) {
-			throw new BadRequestException('Social link not found')
+			throw new BadRequestException('Соціальне посилання не знайдено')
 		}
 		await this.prisma.socialLink.delete({
 			where: {
@@ -105,7 +106,7 @@ export class ProfileService {
 			where: { username: username }
 		})
 		if (existingUser && existingUser.id !== user.id) {
-			throw new BadRequestException('Username is already taken')
+			throw new BadRequestException('Ім’я користувача вже зайняте')
 		}
 
 		await this.prisma.user.update({
@@ -176,7 +177,7 @@ export class ProfileService {
 			})
 		}
 		if (!user.avatarUrl) {
-			return Error('User does not have an avatar to remove')
+			return Error('У користувача немає аватара для видалення')
 		}
 
 		return true

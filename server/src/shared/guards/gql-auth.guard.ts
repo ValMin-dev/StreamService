@@ -7,23 +7,27 @@ import {
 } from '@nestjs/common'
 import { GqlExecutionContext } from '@nestjs/graphql/dist/services/gql-execution-context'
 
+// Гард перевіряє GraphQL-сесію, дістає користувача з БД і кладе його в req.user для декораторів авторизації.
 @Injectable()
 export class GqlAuthGuard implements CanActivate {
 	constructor(private readonly prisma: PrismaService) {}
 
-	canActivate(context: ExecutionContext): Promise<boolean> {
+	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const ctx = GqlExecutionContext.create(context)
 		const { req } = ctx.getContext()
 
 		if (typeof req.session?.userId === 'undefined') {
-			throw new BadRequestException('Unauthorized')
+			throw new BadRequestException('Неавторизований доступ')
 		}
-		const user = this.prisma.user.findUnique({
+		const user = await this.prisma.user.findUnique({
 			where: {
 				id: req.session.userId
 			}
 		})
+		if (!user) {
+			throw new BadRequestException('Неавторизований доступ')
+		}
 		req.user = user
-		return Promise.resolve(true)
+		return true
 	}
 }

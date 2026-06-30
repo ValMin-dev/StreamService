@@ -1,6 +1,7 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { BadRequestException, Injectable } from '@nestjs/common'
 
+// Сервіс збирає дані для сторінки каналу: рекомендації, профіль каналу та кількість підписників.
 @Injectable()
 export class ChannelService {
 	constructor(private readonly prisma: PrismaService) {}
@@ -37,7 +38,7 @@ export class ChannelService {
 
 		if (!channel) {
 			throw new BadRequestException(
-				`Channel with username ${username} not found.`
+				`Канал з ім'ям користувача ${username} не знайдено`
 			)
 		}
 

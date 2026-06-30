@@ -7,6 +7,8 @@ import { Authorization } from '@/src/shared/decorators/auth.decorator'
 import { Authorized } from '@/src/shared/decorators/authorized.decorator'
 import { PubSub } from 'graphql-subscriptions'
 import { ChatMessageModel } from './models/chat.model'
+
+// GraphQL-резолвер підключає чат до мутацій, запитів і підписки на нові повідомлення.
 @Resolver('Chat')
 export class ChatResolver {
 	private readonly pubSub: PubSub

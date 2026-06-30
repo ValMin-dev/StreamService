@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common'
 import { WebhookService } from './webhook.service'
 
+// Контролер приймає HTTP-вебхук від LiveKit і передає його в сервіс обробки.
 @Controller('webhook')
 export class WebhookController {
 	constructor(private readonly webhookService: WebhookService) {}
@@ -20,7 +21,7 @@ export class WebhookController {
 		@Headers('Authorization') authorization: string
 	) {
 		if (!authorization) {
-			throw new BadRequestException('Missing Authorization header')
+			throw new BadRequestException('Відсутній заголовок Authorization')
 		}
 		return this.webhookService.receiveLivekitWebhook(body, authorization)
 	}

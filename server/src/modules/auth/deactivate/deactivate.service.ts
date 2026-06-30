@@ -9,6 +9,8 @@ import { generateToken } from '@/src/shared/utils/generate-token.util'
 import { getSessionMetadata } from '@/src/shared/utils/session-metadata.util'
 import { DeactivateAccountInput } from './inputs/deactivate-account.input'
 import { verify } from 'argon2'
+
+// Сервіс керує деактивацією акаунта: перевіряє дані користувача, надсилає токен і завершує сесію після підтвердження.
 @Injectable()
 export class DeactivateService {
 	constructor(
@@ -26,21 +28,22 @@ export class DeactivateService {
 		const { email, password, pin } = input
 
 		if (email !== user.email) {
-			throw new BadRequestException('Email does not match')
+			throw new BadRequestException('Електронна пошта не збігається')
 		}
 		const isValidPassword = await verify(user.password, password)
 		if (!isValidPassword) {
-			throw new BadRequestException('Password does not match')
+			throw new BadRequestException('Пароль не збігається')
 		}
 
 		if (!pin) {
 			await this.sendDeactivateToken(req, user, userAgent)
-			return { message: 'Deactivation token sent to email' }
+			return { message: 'Токен для деактивації надіслано на пошту' }
 		}
 		await this.validateDeactivateToken(req, pin)
 		return { user }
 	}
 
+	// Перевіряє токен деактивації, змінює стан користувача і завершує активну сесію.
 	async validateDeactivateToken(req: Request, token: string) {
 		const existingToken = await this.prisma.token.findUnique({
 			where: {
@@ -49,12 +52,12 @@ export class DeactivateService {
 			}
 		})
 		if (!existingToken) {
-			throw new BadRequestException('Invalid token')
+			throw new BadRequestException('Неправильний токен')
 		}
 
 		const hasExpired = new Date(existingToken.expiresIn) < new Date()
 		if (hasExpired) {
-			throw new BadRequestException('Token has expired')
+			throw new BadRequestException('Термін дії токена минув')
 		}
 
 		await this.prisma.user.update({
@@ -76,6 +79,7 @@ export class DeactivateService {
 		return destroySession(req, this.configService)
 	}
 
+	// Генерує токен деактивації та відправляє лист із підтвердженням.
 	async sendDeactivateToken(req: Request, user: User, userAgent: string) {
 		const deactivateToken = await generateToken(
 			this.prisma,

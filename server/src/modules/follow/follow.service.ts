@@ -4,6 +4,7 @@ import { User } from '@prisma/client'
 import { FollowInput } from './inputs/follow.input'
 import { NotificationService } from '../notification/notification.service'
 
+// Сервіс керує підписками: показує підписників/підписки, створює follow-зв'язок і за потреби генерує нотифікацію.
 @Injectable()
 export class FollowService {
 	constructor(
@@ -36,7 +37,7 @@ export class FollowService {
 	async follow(user: User, input: FollowInput) {
 		const { followingId } = input
 		if (user.id === followingId) {
-			throw new BadRequestException('You cannot follow yourself.')
+			throw new BadRequestException('Не можна підписатися на самого себе')
 		}
 		const existingFollow = await this.prisma.follow.findUnique({
 			where: {
@@ -48,11 +49,10 @@ export class FollowService {
 		})
 
 		if (existingFollow) {
-			throw new BadRequestException(
-				'You are already following this channel.'
-			)
+			throw new BadRequestException('Ви вже підписані на цей канал')
 		}
 
+		// Створюємо запис про підписку та забираємо дані автора каналу разом із налаштуваннями нотифікацій.
 		const follow = await this.prisma.follow.create({
 			data: {
 				follower: { connect: { id: user.id } },
@@ -67,6 +67,7 @@ export class FollowService {
 				}
 			}
 		})
+		// Якщо у власника каналу увімкнені site-нотифікації, створюємо повідомлення про нового підписника.
 		if (follow.following.notificationSettings?.siteNotifications) {
 			await this.notificationService.createNewFollowing(
 				follow.following,
@@ -86,7 +87,7 @@ export class FollowService {
 			}
 		})
 		if (!existingFollow) {
-			throw new BadRequestException('You are not following this channel.')
+			throw new BadRequestException('Ви не підписані на цей канал')
 		}
 		await this.prisma.follow.delete({
 			where: {

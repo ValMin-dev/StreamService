@@ -6,6 +6,7 @@ import { Authorization } from '@/src/shared/decorators/auth.decorator'
 import type { User } from '@prisma/client'
 import { EnableTotpInput } from './inputs/enable-totp.input'
 
+// GraphQL-резолвер керує запитами для TOTP-секції акаунта.
 @Resolver('Totp')
 export class TotpResolver {
 	constructor(private readonly totpService: TotpService) {}

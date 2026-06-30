@@ -7,6 +7,7 @@ import { getSessionMetadata } from '@/src/shared/utils/session-metadata.util'
 import { saveSession } from '@/src/shared/utils/session.util'
 import type { Request } from 'express'
 import { generateToken } from '@/src/shared/utils/generate-token.util'
+// Сервіс відповідає за підтвердження email: перевіряє токен, активує користувача й створює сесію.
 @Injectable()
 export class VerificationService {
 	constructor(
@@ -24,12 +25,12 @@ export class VerificationService {
 			}
 		})
 		if (!existingToken) {
-			throw new BadRequestException('Invalid token')
+			throw new BadRequestException('Неправильний токен')
 		}
 
 		const hasExpired = new Date(existingToken.expiresIn) < new Date()
 		if (hasExpired) {
-			throw new BadRequestException('Token has expired')
+			throw new BadRequestException('Термін дії токена минув')
 		}
 
 		const user = await this.prisma.user.update({

@@ -5,6 +5,7 @@ import {
 	ValidatorConstraintInterface
 } from 'class-validator'
 
+// Валідація перевіряє, що пароль і підтвердження пароля збігаються при створенні нового пароля.
 @ValidatorConstraint({ name: 'isPasswordMatching', async: false })
 export class IsPasswordMatchingConstraint implements ValidatorConstraintInterface {
 	validate(password: string, args: ValidationArguments): boolean {
@@ -13,6 +14,6 @@ export class IsPasswordMatchingConstraint implements ValidatorConstraintInterfac
 	}
 
 	defaultMessage(args: ValidationArguments): string {
-		return 'Password and confirm password do not match'
+		return 'Пароль і підтвердження пароля не збігаються'
 	}
 }

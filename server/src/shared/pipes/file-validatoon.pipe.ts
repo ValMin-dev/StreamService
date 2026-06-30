@@ -7,11 +7,13 @@ import {
 
 import { validateFileFormat, validateFileSize } from '../utils/file.util'
 import { ReadStream } from 'fs'
+
+// Pipe перевіряє наявність файлу, його формат і розмір перед подальшою обробкою.
 @Injectable()
 export class FileValidationPipe implements PipeTransform {
 	async transform(value: any, metadata: ArgumentMetadata) {
 		if (!value || !value.file) {
-			throw new BadRequestException('No file provided')
+			throw new BadRequestException('Файл не передано')
 		}
 		const { filename, createReadStream } = value
 		const fileStream = createReadStream() as ReadStream
@@ -19,13 +21,13 @@ export class FileValidationPipe implements PipeTransform {
 		const isValidFormat = validateFileFormat(filename, allowedFormats)
 		if (!isValidFormat) {
 			throw new BadRequestException(
-				'Invalid file format. Allowed formats: jpg, jpeg, png, gif, webp'
+				'Неприпустимий формат файлу. Дозволені формати: jpg, jpeg, png, gif, webp'
 			)
 		}
 		const isValidSize = await validateFileSize(fileStream, 10 * 1024 * 1024) //  10MB
 		if (!isValidSize) {
 			throw new BadRequestException(
-				'File size exceeds the maximum limit of 10MB'
+				'Розмір файлу перевищує максимальне обмеження 10 МБ'
 			)
 		}
 		return value

@@ -9,6 +9,8 @@ import {
 	WebhookReceiver
 } from 'livekit-server-sdk'
 import { LiveKitOptionsSymbol, TypeLiveKitOptions } from './types/livekit.types'
+
+// Обгортка над LiveKit SDK: створює клієнти для кімнат, ingress і перевірки вебхуків.
 @Injectable()
 export class LivekitService {
 	private roomService: RoomServiceClient
@@ -53,6 +55,7 @@ export class LivekitService {
 				if (typeof value === 'function') {
 					return value.bind(obj)
 				}
+				return value
 			}
 		})
 	}

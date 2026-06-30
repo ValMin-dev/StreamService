@@ -9,6 +9,7 @@ import { ChangePasswordInput } from './inputs/change-password.input'
 import { SocialLinkModel } from '../profile/model/social-link.model'
 import { User } from '@prisma/client'
 
+// GraphQL-резолвер відкриває акаунтні операції для клієнта.
 @Resolver('Account')
 export class AccountResolver {
 	constructor(private readonly accountService: AccountService) {}

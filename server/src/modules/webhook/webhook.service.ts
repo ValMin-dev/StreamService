@@ -2,6 +2,7 @@ import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { LivekitService } from '@/src/models/libs/livekit/livekit.service'
 import { Injectable } from '@nestjs/common'
 
+// Сервіс приймає вебхуки від LiveKit і перемикає стан стріму в базі.
 @Injectable()
 export class WebhookService {
 	constructor(
@@ -15,12 +16,12 @@ export class WebhookService {
 			authorization,
 			true
 		)
-		console.log('Received Livekit Webhook Event:', event)
+		console.log('Отримано подію вебхука LiveKit:', event)
 
 		const roomName = event.room?.name
-		console.log('Room name:', roomName)
+		console.log('Назва кімнати:', roomName)
 		if (!roomName) {
-			console.warn('Livekit webhook received without room name', event)
+			console.warn('Вебхук LiveKit отримано без назви кімнати', event)
 			return
 		}
 
@@ -28,7 +29,7 @@ export class WebhookService {
 			event.event === 'track_published' ||
 			event.event === 'ingress.started'
 		) {
-			console.log('Marking stream live for room:', roomName)
+			console.log('Позначаємо стрім як онлайн для кімнати:', roomName)
 			await this.prismaService.stream.updateMany({
 				where: { userId: roomName },
 				data: {
@@ -41,7 +42,7 @@ export class WebhookService {
 			event.event === 'track_unpublished' ||
 			event.event === 'ingress.ended'
 		) {
-			console.log('Marking stream offline for room:', roomName)
+			console.log('Позначаємо стрім як офлайн для кімнати:', roomName)
 			await this.prismaService.stream.updateMany({
 				where: { userId: roomName },
 				data: {

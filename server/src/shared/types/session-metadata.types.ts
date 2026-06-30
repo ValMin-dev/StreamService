@@ -1,3 +1,4 @@
+// Типи описують метадані сесії: IP, геолокацію та інформацію про пристрій.
 export interface LocationInfo {
 	city: string
 	country: string
