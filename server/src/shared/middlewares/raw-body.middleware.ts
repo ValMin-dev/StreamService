@@ -4,7 +4,7 @@ import {
 	type NestMiddleware
 } from '@nestjs/common'
 import { NextFunction, Request, Response } from 'express'
-import getRawBody from 'raw-body'
+import getRawBody = require('raw-body')
 
 // Middleware читає сире тіло запиту повністю, щоб вебхуки можна було валідовувати підписом.
 @Injectable()

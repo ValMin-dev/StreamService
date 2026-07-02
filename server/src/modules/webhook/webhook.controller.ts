@@ -21,7 +21,9 @@ export class WebhookController {
 		@Headers('Authorization') authorization: string
 	) {
 		if (!authorization) {
-			throw new BadRequestException('Відсутній заголовок Authorization')
+			throw new BadRequestException(
+				'🔐 Відсутній заголовок Authorization'
+			)
 		}
 		return this.webhookService.receiveLivekitWebhook(body, authorization)
 	}

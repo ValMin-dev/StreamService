@@ -5,16 +5,17 @@ import { ChangeNotificationsSettingsInput } from './inputs/change-notifications-
 import { generateToken } from '@/src/shared/utils/generate-token.util'
 import { NotificationInput } from './inputs/notification.input'
 
+// Сервіс створює нотифікації та керує налаштуваннями сповіщень користувача.
 @Injectable()
 export class NotificationService {
 	constructor(private readonly prisma: PrismaService) {}
 
-	async createStreamStart(user: User) {
+	async createStreamStart(user: User, streamerName: string) {
 		const notification = await this.prisma.notification.create({
 			data: {
-				message: `${user.username} has started streaming!`,
 				type: NotificationType.STREAM_START,
-				user: { connect: { id: user.id } }
+				user: { connect: { id: user.id } },
+				message: `🎥 ${streamerName} розпочав стрім!`
 			}
 		})
 		return notification
@@ -23,7 +24,7 @@ export class NotificationService {
 	async createNewFollowing(user: User, follower: User) {
 		const notification = await this.prisma.notification.create({
 			data: {
-				message: `${follower.username} has started following ${user.username}!`,
+				message: `🔔 ${follower.username} підписався на ${user.username}!`,
 				type: NotificationType.NEW_FOLLOWER,
 				user: { connect: { id: user.id } }
 			}
