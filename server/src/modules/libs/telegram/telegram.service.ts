@@ -1,11 +1,12 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { TokenType } from '@prisma/client'
+import { TokenType, User } from '@prisma/client'
 import { Action, Command, Ctx, Start, Update } from 'nestjs-telegraf'
 import { Context, Telegraf } from 'telegraf'
 import { MESSAGES } from './telegram.messages'
 import { BUTTONS } from './telegram.buttons'
+import type { SessionMetadata } from '@/src/shared/types/session-metadata.types'
 
 // Сервіс Telegram-бота обробляє /start, підписки, профіль і прив'язку акаунта.
 @Update()
@@ -59,6 +60,7 @@ export class TelegramService extends Telegraf {
 		if (user) {
 			return await ctx.replyWithHTML(
 				MESSAGES.WELCOME_BACK(user.username),
+				BUTTONS.authSuccess,
 				BUTTONS.profile
 			)
 		} else {
@@ -119,6 +121,58 @@ export class TelegramService extends Telegraf {
 				BUTTONS.profile
 			)
 		}
+	}
+
+	async sendPassResetToken(
+		chatId: string,
+		token: string,
+		metadata: SessionMetadata
+	) {
+		await this.telegram.sendMessage(
+			chatId,
+			MESSAGES.RESET_PASSWORD(token, metadata),
+			{ parse_mode: 'HTML' }
+		)
+	}
+
+	async sendDeactivateAccountToken(
+		chatId: string,
+		token: string,
+		metadata: SessionMetadata
+	) {
+		await this.telegram.sendMessage(
+			chatId,
+			MESSAGES.DEACTIVATE_ACCOUNT(token, metadata),
+			{ parse_mode: 'HTML' }
+		)
+	}
+
+	async sendSuccessDeactivationMessage(chatId: string) {
+		await this.telegram.sendMessage(chatId, MESSAGES.SUCCESS_DEACTIVATION, {
+			parse_mode: 'HTML'
+		})
+	}
+
+	async streamStart(chatId: string, channel: User) {
+		await this.telegram.sendMessage(
+			chatId,
+			MESSAGES.STREAM_START(channel),
+			{
+				parse_mode: 'HTML'
+			}
+		)
+	}
+
+	async newFollowMessage(chatId: string, follower: User) {
+		const user = await this.findUserByChatId(chatId)
+
+		await this.telegram.sendMessage(
+			chatId,
+			MESSAGES.NEW_FOLLOW(follower, user.followings.length),
+			{
+				parse_mode: 'HTML'
+			}
+		)
 	}
 
 	private async connectTelegram(userId: string, chatId: string) {

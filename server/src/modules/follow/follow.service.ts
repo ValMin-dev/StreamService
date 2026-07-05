@@ -1,3 +1,4 @@
+import { TelegramService } from './../libs/telegram/telegram.service'
 import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { User } from '@prisma/client'
@@ -9,7 +10,8 @@ import { NotificationService } from '../notification/notification.service'
 export class FollowService {
 	constructor(
 		private readonly prisma: PrismaService,
-		private readonly notificationService: NotificationService
+		private readonly notificationService: NotificationService,
+		private readonly telegramService: TelegramService
 	) {}
 
 	async findMyFollowers(user: User) {
@@ -71,6 +73,16 @@ export class FollowService {
 		if (follow.following.notificationSettings?.siteNotifications) {
 			await this.notificationService.createNewFollowing(
 				follow.following,
+				follow.follower
+			)
+		}
+
+		if (
+			follow.following.notificationSettings?.telegramNotifications &&
+			follow.following.telegramId
+		) {
+			await this.telegramService.newFollowMessage(
+				follow.following.telegramId,
 				follow.follower
 			)
 		}

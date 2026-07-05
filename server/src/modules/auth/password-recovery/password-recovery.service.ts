@@ -8,12 +8,14 @@ import type { Request } from 'express'
 import { getSessionMetadata } from '@/src/shared/utils/session-metadata.util'
 import { NewPasswordInput } from './inputs/new-password.input'
 import { hash } from 'argon2'
+import { TelegramService } from '../../libs/telegram/telegram.service'
 // Сервіс обробляє відновлення пароля: створює токен, надсилає лист і встановлює новий пароль.
 @Injectable()
 export class PasswordRecoveryService {
 	constructor(
 		private readonly mailService: MailService,
-		private readonly prisma: PrismaService
+		private readonly prisma: PrismaService,
+		private readonly telegramService: TelegramService
 	) {}
 
 	async newPassword(input: NewPasswordInput) {
@@ -62,7 +64,8 @@ export class PasswordRecoveryService {
 		const user = await this.prisma.user.findUnique({
 			where: {
 				email
-			}
+			},
+			include: { notificationSettings: true }
 		})
 		if (!user) {
 			throw new BadRequestException(
@@ -81,6 +84,18 @@ export class PasswordRecoveryService {
 			resetToken.token,
 			metadata
 		)
+
+		if (
+			resetToken.user?.telegramId &&
+			resetToken.user?.notificationSettings?.telegramNotifications
+		) {
+			await this.telegramService.sendPassResetToken(
+				resetToken.user.telegramId,
+				resetToken.token,
+				metadata
+			)
+		}
+
 		return true
 	}
 }

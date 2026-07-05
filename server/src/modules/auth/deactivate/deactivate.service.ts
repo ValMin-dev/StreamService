@@ -9,6 +9,7 @@ import { generateToken } from '@/src/shared/utils/generate-token.util'
 import { getSessionMetadata } from '@/src/shared/utils/session-metadata.util'
 import { DeactivateAccountInput } from './inputs/deactivate-account.input'
 import { verify } from 'argon2'
+import { TelegramService } from '../../libs/telegram/telegram.service'
 
 // Сервіс керує деактивацією акаунта: перевіряє дані користувача, надсилає токен і завершує сесію після підтвердження.
 @Injectable()
@@ -16,7 +17,8 @@ export class DeactivateService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly mailService: MailService,
-		private readonly configService: ConfigService
+		private readonly configService: ConfigService,
+		private readonly telegramService: TelegramService
 	) {}
 
 	async deactivate(
@@ -26,6 +28,13 @@ export class DeactivateService {
 		userAgent: string
 	) {
 		const { email, password, pin } = input
+
+		const notificationSettings =
+			await this.prisma.notificationSettings.findUnique({
+				where: {
+					userId: user.id
+				}
+			})
 
 		if (email !== user.email) {
 			throw new BadRequestException('Електронна пошта не збігається')
@@ -40,6 +49,13 @@ export class DeactivateService {
 			return { message: 'Токен для деактивації надіслано на пошту' }
 		}
 		await this.validateDeactivateToken(req, pin)
+
+		if (user.telegramId && notificationSettings?.telegramNotifications) {
+			await this.telegramService.sendSuccessDeactivationMessage(
+				user.telegramId
+			)
+		}
+
 		return { user }
 	}
 
@@ -69,6 +85,7 @@ export class DeactivateService {
 				deactivatedAt: new Date()
 			}
 		})
+
 		await this.prisma.token.delete({
 			where: {
 				id: existingToken.id,
@@ -94,6 +111,18 @@ export class DeactivateService {
 			deactivateToken.token,
 			metadata
 		)
+
+		if (
+			deactivateToken.user?.telegramId &&
+			deactivateToken.user?.notificationSettings?.telegramNotifications
+		) {
+			await this.telegramService.sendDeactivateAccountToken(
+				deactivateToken.user.telegramId,
+				deactivateToken.token,
+				metadata
+			)
+		}
+
 		return true
 	}
 }

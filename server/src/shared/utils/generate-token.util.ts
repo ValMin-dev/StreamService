@@ -22,24 +22,38 @@ export async function generateToken(
 		where: {
 			user: { id: user.id },
 			type
+		},
+		include: {
+			user: {
+				include: {
+					notificationSettings: true
+				}
+			}
 		}
 	})
 	if (existingToken) {
-		return prisma.token.delete({
+		await prisma.token.delete({
 			where: {
 				id: existingToken.id
 			}
 		})
+		return existingToken
 	}
 
 	const newToken = await prisma.token.create({
 		data: {
 			token,
-			user: { connect: { id: user.id } },
 			type,
-			expiresIn
+			expiresIn,
+			user: { connect: { id: user.id } }
 		},
-		include: { user: true }
+		include: {
+			user: {
+				include: {
+					notificationSettings: true
+				}
+			}
+		}
 	})
 	return newToken
 }
