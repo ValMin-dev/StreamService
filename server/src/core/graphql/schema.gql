@@ -135,6 +135,10 @@ input LoginInput {
   pin: String
 }
 
+type MakePaymentModel {
+  url: String!
+}
+
 type Mutation {
   changeAvatar(avatarUrl: Upload!): Boolean!
   changeChatSettings(data: ChangeChatSettingsInput!): Boolean!
@@ -160,6 +164,7 @@ type Mutation {
   generateStreamToken(data: GenerateStreamTokenInput!): GenerateStreamTokenModel!
   loginUser(data: LoginInput!): AuthModel!
   logoutUser: Boolean!
+  makeTransaction(planId: String!): MakePaymentModel!
   newPassword(data: NewPasswordInput!): Boolean!
   removeAvatar: Boolean!
   removeSession(sessionId: String!): Boolean!
@@ -236,6 +241,8 @@ type Query {
   findAllUsers: [UserModel!]!
   findCurrentSession: SessionModel!
   findMessagesByStream(streamId: String!): Boolean!
+  findMySponsors: [SubscriptionModel!]!
+  findMyTransactions: [TransactionModel!]!
   findNotificationsByUserId: [NotificationModel!]!
   findProfile: UserModel!
   findRandomCategories: [CategoryModel!]!
@@ -243,6 +250,7 @@ type Query {
   findRecommended: [UserModel!]!
   findSessionsByUser: [SessionModel!]!
   findSocialLinks: [SocialLinkModel!]!
+  findSponsorByChannel(channelId: String!): [SubscriptionModel!]!
   findUnreadCount: Float!
   generateTotpSecret: TotpModel!
   getCategoryBySlug(slug: String!): CategoryModel!
@@ -325,9 +333,44 @@ type Subscription {
   chatMessageAdded(streamId: String!): ChatMessageModel!
 }
 
+type SubscriptionModel {
+  channel: UserModel!
+  channelId: String!
+  createdAt: DateTime!
+  expiresAt: DateTime!
+  id: ID!
+  plan: PlanModel!
+  planId: String!
+  updatedAt: DateTime!
+  user: UserModel!
+  userId: String!
+}
+
 type TotpModel {
   qrCodeUrl: String!
   secret: String!
+}
+
+type TransactionModel {
+  amount: Float!
+  createdAt: DateTime!
+  currency: String!
+  id: ID!
+  price: Float!
+  status: TransactionStatus!
+  stripeProductId: String!
+  stripeSubscriptionId: String!
+  updatedAt: DateTime!
+  user: UserModel!
+  userId: String!
+}
+
+"""The type of Transaction Status"""
+enum TransactionStatus {
+  COMPLETED
+  EXPIRED
+  FAILED
+  PENDING
 }
 
 """The `Upload` scalar type represents a file upload."""

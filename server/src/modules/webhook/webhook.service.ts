@@ -2,6 +2,11 @@ import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { LivekitService } from '@/src/models/libs/livekit/livekit.service'
 import { Injectable } from '@nestjs/common'
 import { NotificationService } from '../notification/notification.service'
+import Stripe from 'stripe'
+import { TransactionStatus } from '@prisma/client'
+import { TelegramService } from '../libs/telegram/telegram.service'
+import { ConfigService } from '@nestjs/config'
+import { StripeService } from '../libs/stripe/stripe.service'
 
 // Сервіс приймає вебхуки від LiveKit, перемикає стан стріму та створює нотифікації.
 @Injectable()
@@ -9,7 +14,10 @@ export class WebhookService {
 	constructor(
 		private readonly livekitService: LivekitService,
 		private readonly prismaService: PrismaService,
-		private readonly notificationService: NotificationService
+		private readonly notificationService: NotificationService,
+		private readonly telegranService: TelegramService,
+		private readonly configService: ConfigService,
+		private readonly stripeService: StripeService
 	) {}
 
 	async receiveLivekitWebhook(body: string, authorization: string) {
@@ -84,5 +92,127 @@ export class WebhookService {
 				where: { streamId: stream.id }
 			})
 		}
+	}
+
+	async receiveWebhookStripe(event: Stripe.Event) {
+		const session = event.data.object as Stripe.Checkout.Session
+		console.log('Received Stripe webhook event:', event.type)
+		console.log('Stripe session id:', session.id)
+		console.log('Stripe session metadata:', session.metadata)
+
+		if (event.type === 'checkout.session.expired') {
+			await this.prismaService.transaction.updateMany({
+				where: {
+					stripeSubscriptionId: session.id,
+					status: TransactionStatus.PENDING
+				},
+				data: {
+					status: TransactionStatus.EXPIRED
+				}
+			})
+		}
+
+		if (event.type === 'checkout.session.async_payment_failed') {
+			await this.prismaService.transaction.updateMany({
+				where: {
+					stripeSubscriptionId: session.id,
+					status: TransactionStatus.PENDING
+				},
+				data: {
+					status: TransactionStatus.FAILED
+				}
+			})
+		}
+
+		if (
+			event.type === 'checkout.session.completed' ||
+			event.type === 'checkout.session.async_payment_succeeded'
+		) {
+			const { planId, userId, channelId } = session.metadata || {}
+
+			if (!planId || !userId || !channelId) {
+				console.warn(
+					'Missing metadata for checkout session success event',
+					session.id,
+					session.metadata
+				)
+				return
+			}
+
+			const expiresAt = new Date()
+			expiresAt.setDate(expiresAt.getDate() + 30)
+			const sponsorshipSubscription =
+				await this.prismaService.sponsorshipSubscription.create({
+					data: {
+						expiresAt,
+						planId,
+						userId,
+						channelId
+					},
+					include: {
+						plan: true,
+						user: true,
+						channel: {
+							include: {
+								notificationSettings: true
+							}
+						}
+					}
+				})
+
+			const updateResult =
+				await this.prismaService.transaction.updateMany({
+					where: {
+						stripeSubscriptionId: session.id,
+						status: TransactionStatus.PENDING
+					},
+					data: {
+						status: TransactionStatus.COMPLETED
+					}
+				})
+
+			console.log(
+				'Stripe checkout.session completed/async_payment_succeeded update count:',
+				updateResult.count,
+				'session id:',
+				session.id
+			)
+			if (updateResult.count === 0) {
+				console.warn(
+					'No matching transaction found for checkout.session success event',
+					session.id
+				)
+			}
+
+			if (
+				sponsorshipSubscription.channel.notificationSettings
+					.siteNotifications
+			) {
+				await this.notificationService.createNewSponsorship(
+					sponsorshipSubscription.channel.id,
+					sponsorshipSubscription.plan,
+					sponsorshipSubscription.user
+				)
+			}
+
+			if (
+				sponsorshipSubscription.channel.notificationSettings
+					.telegramNotifications &&
+				sponsorshipSubscription.channel.telegramId
+			) {
+				await this.telegranService.newSponsorship(
+					sponsorshipSubscription.channel.telegramId,
+					sponsorshipSubscription.user,
+					sponsorshipSubscription.plan
+				)
+			}
+		}
+	}
+	constructStripeEvent(payload: any, signature: any) {
+		return this.stripeService.webhooks.constructEvent(
+			payload,
+			signature,
+			this.configService.getOrThrow<string>('STRIPE_WEBHOOK_SECRET')
+		)
 	}
 }

@@ -5,7 +5,8 @@ import {
 	HttpStatus,
 	Post,
 	Headers,
-	BadRequestException
+	BadRequestException,
+	RawBody
 } from '@nestjs/common'
 import { WebhookService } from './webhook.service'
 
@@ -26,5 +27,22 @@ export class WebhookController {
 			)
 		}
 		return this.webhookService.receiveLivekitWebhook(body, authorization)
+	}
+
+	@Post('stripe')
+	@HttpCode(HttpStatus.OK)
+	async receiveWebhookStripe(
+		@RawBody() rawBody: string,
+		@Headers('stripe-signature') sig: string
+	) {
+		if (!sig) {
+			throw new BadRequestException('Відсутній Stripe у заголовку ')
+		}
+		const event = await this.webhookService.constructStripeEvent(
+			rawBody,
+			sig
+		)
+
+		await this.webhookService.receiveWebhookStripe(event)
 	}
 }

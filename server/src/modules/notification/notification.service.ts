@@ -1,6 +1,11 @@
 import { PrismaService } from '@/src/core/prisma/prisma.service'
 import { Injectable } from '@nestjs/common'
-import { NotificationType, TokenType, User } from '@prisma/client'
+import {
+	NotificationType,
+	SponsorshipPlan,
+	TokenType,
+	User
+} from '@prisma/client'
 import { ChangeNotificationsSettingsInput } from './inputs/change-notifications-settings.input'
 import { generateToken } from '@/src/shared/utils/generate-token.util'
 import { NotificationInput } from './inputs/notification.input'
@@ -101,6 +106,23 @@ export class NotificationService {
 		const { message, type, userId } = input
 		const notification = await this.prisma.notification.create({
 			data: { message, type, userId }
+		})
+		return notification
+	}
+
+	async createNewSponsorship(
+		userId: string,
+		plan: SponsorshipPlan,
+		sponsor: User
+	) {
+		const notification = await this.prisma.notification.create({
+			data: {
+				type: NotificationType.NEW_SPONSOR,
+				user: { connect: { id: userId } },
+				message: `<b className="font-medium">У вас новий спонсор! </b>
+				<p>Користувач <a href="${sponsor.username}">${sponsor.displayName}</a> Став вашим спонсором за планом <strong>"${plan.title}"</strong> </p>,
+				`
+			}
 		})
 		return notification
 	}

@@ -1,5 +1,5 @@
 import { SessionMetadata } from '@/src/shared/types/session-metadata.types'
-import type { User } from '@prisma/client'
+import type { SponsorshipPlan, User } from '@prisma/client'
 
 // Набір текстів Telegram-бота: привітання, допомога, профіль і службові повідомлення.
 export const MESSAGES = {
@@ -66,5 +66,12 @@ export const MESSAGES = {
 	NEW_FOLLOW: (follower: User, followerCount: number) =>
 		`💙 У вас новий підписник!\n\n` +
 		`<a href="https://twitchcopy.com/${follower.username}">${follower.username}</a> підписався на вас!` +
-		`\n\n👥 У вас тепер ${followerCount} підписників.`
+		`\n\n👥 У вас тепер ${followerCount} підписників.`,
+	NEW_SPONSORSHIP: (sponsor: User, plan: SponsorshipPlan) =>
+		`💙 <b>У вас новий спонсор!</b>\n\n` +
+		`<a href="https://twitchcopy.com/${sponsor.username}">${sponsor.username}</a> оформив підписку на вас!\n\n` +
+		`Тарифний план <b>${plan.title}</b> \n\n` +
+		`Сума ${plan.price}\n\n` +
+		`Дата оформленння ${new Date().toLocaleDateString()} в ${new Date().toLocaleTimeString}\n\n` +
+		`Дякуємо за вашу роботу`
 }
