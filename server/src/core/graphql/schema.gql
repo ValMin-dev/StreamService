@@ -65,6 +65,12 @@ type ChatMessageModel {
   userId: String!
 }
 
+input CreatePlanInput {
+  description: String
+  price: Float!
+  title: String!
+}
+
 input CreateUserInput {
   email: String!
   password: String!
@@ -141,9 +147,11 @@ type Mutation {
   clearSessionCookie: Boolean!
   createIngress(ingressType: Float!): Boolean!
   createNotification(data: NotificationInput!): NotificationModel!
+  createPlan(data: CreatePlanInput!): Boolean!
   createSocialLink(data: SocialLinkInput!): Boolean!
   createUser(data: CreateUserInput!): Boolean!
   deactivateAccount(data: DeactivateAccountInput!): AuthModel!
+  deletePlan(planId: String!): Boolean!
   disableTotp: Boolean!
   enableTotp(data: EnableTotpInput!): Boolean!
   findMyFollowers: [UserModel!]!
@@ -207,6 +215,19 @@ enum NotificationType {
   VERIFIED_CHANNEL
 }
 
+type PlanModel {
+  channel: UserModel!
+  channelId: String!
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  price: Float!
+  stripePlanId: String!
+  stripeProductId: String!
+  title: String!
+  updatedAt: DateTime!
+}
+
 type Query {
   channelChannelByUsername(username: String!): UserModel!
   channelFollowersCount(channelId: String!): Float!
@@ -225,6 +246,7 @@ type Query {
   findUnreadCount: Float!
   generateTotpSecret: TotpModel!
   getCategoryBySlug(slug: String!): CategoryModel!
+  myPlans: [PlanModel!]!
 }
 
 input ResetPasswordInput {

@@ -27,6 +27,11 @@ import { FollowModule } from '../modules/follow/follow.module'
 import { ChannelModule } from '../modules/channel/channel.module'
 import { NotificationModule } from '../modules/notification/notification.module'
 import { TelegramModule } from '../modules/libs/telegram/telegram.module'
+import { StripeModule } from '../modules/libs/stripe/stripe.module'
+import { getStripeConfig } from './config/stripe.config'
+import { SubscriptionModule } from '../modules/sponsorship/subscription/subscription.module'
+import { TransactionModule } from '../modules/sponsorship/transaction/transaction.module'
+import { PlanModule } from '../modules/sponsorship/plan/plan.module'
 @Module({
 	imports: [
 		ConfigModule.forRoot({
@@ -51,8 +56,17 @@ import { TelegramModule } from '../modules/libs/telegram/telegram.module'
 		ChatModule,
 		ChannelModule,
 		NotificationModule,
+		PlanModule,
+		TransactionModule,
+		SubscriptionModule,
 		FollowModule,
 		TelegramModule,
+		StripeModule.registerAsync({
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: getStripeConfig
+		}),
+
 		LivekitModule.registerAsync({
 			imports: [ConfigModule],
 			inject: [ConfigService],
