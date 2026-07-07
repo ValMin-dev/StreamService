@@ -15,5 +15,9 @@ export class WebhookModule {
 			path: 'webhook/livekit',
 			method: RequestMethod.POST
 		})
+		consumer.apply(RawBodyMiddleware).forRoutes({
+			path: 'webhook/stripe',
+			method: RequestMethod.POST
+		})
 	}
 }

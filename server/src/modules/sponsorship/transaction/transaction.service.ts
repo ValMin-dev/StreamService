@@ -81,7 +81,7 @@ export class TransactionService {
 				planId: plan.id,
 				channelId: plan.channelId
 			},
-			success_url: `${this.configService.get('ALLOWED_ORIGIN')}/success?price=${plan.price}&username=${plan.channelId} }`,
+			success_url: `${this.configService.get('ALLOWED_ORIGIN')}/success?price=${plan.price}&username=${plan.channelId}`,
 			cancel_url: `${this.configService.get('ALLOWED_ORIGIN')}`
 		})
 
