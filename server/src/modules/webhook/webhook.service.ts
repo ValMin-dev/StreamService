@@ -96,9 +96,6 @@ export class WebhookService {
 
 	async receiveWebhookStripe(event: Stripe.Event) {
 		const session = event.data.object as Stripe.Checkout.Session
-		console.log('Received Stripe webhook event:', event.type)
-		console.log('Stripe session id:', session.id)
-		console.log('Stripe session metadata:', session.metadata)
 
 		if (event.type === 'checkout.session.expired') {
 			await this.prismaService.transaction.updateMany({
@@ -171,12 +168,6 @@ export class WebhookService {
 					}
 				})
 
-			console.log(
-				'Stripe checkout.session completed/async_payment_succeeded update count:',
-				updateResult.count,
-				'session id:',
-				session.id
-			)
 			if (updateResult.count === 0) {
 				console.warn(
 					'No matching transaction found for checkout.session success event',

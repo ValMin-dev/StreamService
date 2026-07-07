@@ -26,7 +26,10 @@ export class TransactionService {
 
 	async makeTransaction(user: User, planId: string) {
 		const plan = await this.prisma.sponsorshipPlan.findUnique({
-			where: { id: planId }
+			where: { id: planId },
+			include: {
+				channel: true
+			}
 		})
 
 		if (!plan) {
@@ -81,7 +84,7 @@ export class TransactionService {
 				planId: plan.id,
 				channelId: plan.channelId
 			},
-			success_url: `${this.configService.get('ALLOWED_ORIGIN')}/success?price=${plan.price}&username=${plan.channelId}`,
+			success_url: `${this.configService.get('ALLOWED_ORIGIN')}/success?price=${encodeURIComponent(plan.price)}&username=${encodeURIComponent(plan.channel?.username ?? '')}`,
 			cancel_url: `${this.configService.get('ALLOWED_ORIGIN')}`
 		})
 

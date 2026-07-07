@@ -175,6 +175,18 @@ export class TelegramService extends Telegraf {
 		)
 	}
 
+	async sendEnableTwoFactorMessage(chatId: string) {
+		await this.telegram.sendMessage(chatId, MESSAGES.ENABLE_TWO_FACTOR, {
+			parse_mode: 'HTML'
+		})
+	}
+
+	async sendVerifyChannelMessage(chatId: string) {
+		await this.telegram.sendMessage(chatId, MESSAGES.VERIFY_CHANNEL, {
+			parse_mode: 'HTML'
+		})
+	}
+
 	async newSponsorship(chatId: string, sponsor: User, plan: SponsorshipPlan) {
 		await this.telegram.sendMessage(
 			chatId,

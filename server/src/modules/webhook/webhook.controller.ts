@@ -6,8 +6,10 @@ import {
 	Post,
 	Headers,
 	BadRequestException,
-	RawBody
+	RawBody,
+	Req
 } from '@nestjs/common'
+import type { Request } from 'express'
 import { WebhookService } from './webhook.service'
 
 // Контролер приймає HTTP-вебхук від LiveKit і передає його в сервіс обробки.
@@ -32,14 +34,19 @@ export class WebhookController {
 	@Post('stripe')
 	@HttpCode(HttpStatus.OK)
 	async receiveWebhookStripe(
-		@RawBody() rawBody: string,
+		@RawBody() rawBody: Buffer | string,
+		@Req() req: Request & { rawBody?: Buffer },
 		@Headers('stripe-signature') sig: string
 	) {
 		if (!sig) {
 			throw new BadRequestException('Відсутній Stripe у заголовку ')
 		}
+		const payload = req.rawBody ?? rawBody
+		if (!payload) {
+			throw new BadRequestException('Відсутнє сире тіло запиту Stripe')
+		}
 		const event = await this.webhookService.constructStripeEvent(
-			rawBody,
+			payload,
 			sig
 		)
 
