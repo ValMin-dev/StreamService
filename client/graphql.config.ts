@@ -1,0 +1,26 @@
+import type { CodegenConfig } from '@graphql-codegen/cli'
+
+const config: CodegenConfig = {
+	schema:
+		process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:4000/graphql',
+	documents: ['src/graphql/**/*.graphql'],
+	generates: {
+		'./src/graphql/generated/output.ts': {
+			plugins: [
+				'typescript',
+				'typescript-operations',
+				{
+					'typescript-react-apollo': {
+						withHooks: true,
+						withHOC: false,
+						withComponent: false,
+						withSuspense: false
+					}
+				}
+			]
+		}
+	},
+	ignoreNoDocuments: true
+}
+
+export default config

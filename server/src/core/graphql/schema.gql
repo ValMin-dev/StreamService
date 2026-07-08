@@ -234,11 +234,11 @@ type PlanModel {
 }
 
 type Query {
-  channelChannelByUsername(username: String!): UserModel!
   channelFollowersCount(channelId: String!): Float!
   findAllCategories: [CategoryModel!]!
   findAllStreams(data: StreamFiltersInput!): [StreamModel!]!
   findAllUsers: [UserModel!]!
+  findChannelByUsername(username: String!): UserModel!
   findCurrentSession: SessionModel!
   findMessagesByStream(streamId: String!): Boolean!
   findMySponsors: [SubscriptionModel!]!
